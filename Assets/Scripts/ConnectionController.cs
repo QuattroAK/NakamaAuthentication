@@ -1,7 +1,9 @@
+using System;
 using UnityEngine;
 using Nakama;
+using VContainer.Unity;
 
-public class ConnectionController : MonoBehaviour
+public class ConnectionController : IInitializable, IDisposable
 {
     private string scheme = "http";
     private string host = "localhost";
@@ -33,9 +35,19 @@ public class ConnectionController : MonoBehaviour
         Debug.Log(socket);
     }
 
-    private async void OnApplicationQuit()
+    private async void CloseSocket()
     {
         await socket.CloseAsync();
         Debug.Log("Log out completed");
+    }
+
+    public void Initialize()
+    {
+        Start();
+    }
+
+    public void Dispose()
+    {
+        CloseSocket();
     }
 }
