@@ -7,6 +7,15 @@
       "dependencies": {},
       "hash": "88ecfa2992d4f7247aaad0322921aa3fb929aeee"
     },
+    "com.heroiclabs.nakama-unity": {
+      "version": "https://github.com/heroiclabs/nakama-unity.git?path=/Packages/Nakama#v3.12.0",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {
+        "com.unity.modules.unitywebrequest": "1.0.0"
+      },
+      "hash": "a00ccde6af4fec15b9e55f98e7c41b5171ec47cc"
+    },
     "com.unity.collab-proxy": {
       "version": "2.3.1",
       "depth": 0,
