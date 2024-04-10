@@ -14,9 +14,18 @@ public class ConnectionController : IInitializable, IDisposable
     private ISession session;
     private ISocket socket;
 
+    private readonly ConnectionInfo _info;
+
+    public ConnectionController(ConnectionInfo info)
+    {
+        this._info = info;
+        Debug.Log($"<color=red>{info.Port}</color>");
+    }
+
     private async void Start()
     {
-        client = new Client(scheme, host, port, serverKey, UnityWebRequestAdapter.Instance);
+        client = new Client(_info.Scheme, _info.Host, _info.Port, _info.ServerKey,
+            UnityWebRequestAdapter.Instance);
 
         try
         {
@@ -37,7 +46,9 @@ public class ConnectionController : IInitializable, IDisposable
 
     private async void CloseSocket()
     {
-        await socket.CloseAsync();
+        if (socket != null)
+            await socket.CloseAsync();
+
         Debug.Log("Log out completed");
     }
 

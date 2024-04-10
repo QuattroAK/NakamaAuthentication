@@ -8,6 +8,7 @@ public class ControllerScope : LifetimeScope
 {
    protected override void Configure(IContainerBuilder builder)
    {
+      Debug.LogError($"Start{nameof(ControllerScope)}");
       builder.RegisterEntryPoint<ConnectionController>();
    }
 }
