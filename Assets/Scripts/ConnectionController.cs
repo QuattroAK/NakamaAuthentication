@@ -1,35 +1,40 @@
 using System;
-using UnityEngine;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using Nakama;
+using UnityEngine;
+using VContainer;
 using VContainer.Unity;
+using Object = UnityEngine.Object;
 
-public class ConnectionController : IInitializable, IDisposable
+public class ConnectionController : IAsyncStartable, IDisposable
 {
-    private string scheme = "http";
-    private string host = "localhost";
-    private int port = 7350;
-    private string serverKey = "defaultkey";
-
     private IClient client;
     private ISession session;
     private ISocket socket;
 
-    private readonly ConnectionInfo _info;
+    private readonly ConnectionInfo connectionInfo;
+    private readonly IObjectResolver container;
 
-    public ConnectionController(ConnectionInfo info)
+    public ConnectionController(ConnectionInfo connectionInfo, IObjectResolver container)
     {
-        this._info = info;
-        Debug.Log($"<color=red>{info.Port}</color>");
+        this.connectionInfo = connectionInfo;
+        this.container = container;
     }
 
-    private async void Start()
+    async UniTask IAsyncStartable.StartAsync(CancellationToken ct)
     {
-        client = new Client(_info.Scheme, _info.Host, _info.Port, _info.ServerKey,
+        Debug.LogError($"<color=green>Connection start</color>");
+        client = new Client(connectionInfo.Scheme, connectionInfo.Host, connectionInfo.Port, connectionInfo.ServerKey,
             UnityWebRequestAdapter.Instance);
+
+        await UniTask.Delay(TimeSpan.FromSeconds(2f), cancellationToken: ct);
+
+        var scope = Show<AuthenticationPopup, AuthenticationPopupModel>();
 
         try
         {
-            session = await client.AuthenticateDeviceAsync(SystemInfo.deviceUniqueIdentifier);
+            session = await client.AuthenticateDeviceAsync(SystemInfo.deviceUniqueIdentifier, canceller: ct);
         }
         catch (ApiResponseException ex)
         {
@@ -44,21 +49,39 @@ public class ConnectionController : IInitializable, IDisposable
         Debug.Log(socket);
     }
 
-    private async void CloseSocket()
+    private IObjectResolver Show<TComponent, RObject1>(params object[] arguments)
+        where TComponent : Component
+    {
+        var view = Object.Instantiate(connectionInfo.Prefab.gameObject);
+
+        var scope = container
+            .CreateScope(builder =>
+            {
+                builder.Register<RObject1>(Lifetime.Scoped).AsSelf().AsImplementedInterfaces();
+                foreach (var argument in arguments)
+                    builder.RegisterInstance(argument).AsImplementedInterfaces();
+            });
+
+        scope.InjectGameObject(view);
+
+        if (view.TryGetComponent(out TComponent c))
+        {
+            Debug.LogError($"Instantiate {nameof(TComponent)}");
+        }
+
+        return scope;
+    }
+
+    private async UniTaskVoid CloseSocket()
     {
         if (socket != null)
             await socket.CloseAsync();
+        else
+            Debug.LogError("Socket was not created");
 
         Debug.Log("Log out completed");
     }
 
-    public void Initialize()
-    {
-        Start();
-    }
-
-    public void Dispose()
-    {
-        CloseSocket();
-    }
+    public void Dispose() =>
+        CloseSocket().Forget();
 }
