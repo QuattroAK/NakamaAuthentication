@@ -26,7 +26,7 @@ public class ConnectionController : IAsyncStartable, IDisposable
         client = new Client(connection.Scheme, connection.Host, connection.Port, connection.ServerKey,
             UnityWebRequestAdapter.Instance);
 
-        popups.Show<AuthenticationPopup, AuthenticationPopupModel>();
+        popups.Show<AuthenticationPopup, AuthenticationPopupModel>(client);
 
         try
         {

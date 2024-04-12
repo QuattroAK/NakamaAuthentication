@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 887a61870cf8471f9fdbfb0dc8ca05f0, type: 3}
+  m_Name: AuthenticationsInfo
+  m_EditorClassIdentifier: 
+  authenticationInfos:
+  - id: 1
+    icon: {fileID: 21300000, guid: df83bd00d6feecc4bbf8f13a1f19a9b7, type: 3}
+  - id: 2
+    icon: {fileID: 21300000, guid: 86cb3036ce75526479fda3c9b4f229b4, type: 3}
+  authentificationCard: {fileID: 5951717237149308062, guid: 0f000f7cd39a92f46b0b49515e0f42d7, type: 3}

@@ -8,10 +8,6 @@ public class ConnectionInfo : ScriptableObject
     [SerializeField] private int port;
     [SerializeField] private string serverKey;
 
-    [SerializeField] private AuthenticationPopup preafab;
-
-    public AuthenticationPopup Prefab => preafab;
-
     public string Scheme => scheme;
     public string Host => host;
     public int Port => port;

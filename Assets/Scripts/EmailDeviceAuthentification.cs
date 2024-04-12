@@ -6,6 +6,8 @@ public class EmailDeviceAuthentification : IAuthenticationService
     const string email = "email@example.com";
     const string password = "3bc8f72e95a9";
 
+    public AuthenticationService ID => AuthenticationService.Email;
+
     public async UniTask<ISession> AuthenticateAsync(IClient client)
     {
         return await client.AuthenticateEmailAsync(email, password);

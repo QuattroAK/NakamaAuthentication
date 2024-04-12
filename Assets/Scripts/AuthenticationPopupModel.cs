@@ -1,16 +1,31 @@
-using System.Collections;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
+using Nakama;
 using UnityEngine;
 
 public class AuthenticationPopupModel : IAuthenticationPopupModel
 {
     private readonly AuthenticationServices authenticationServices;
-    public int ServicesCount => authenticationServices.AuthenticationsCount;
+    private readonly AuthenticationsInfo authenticationsInfo;
+    private readonly IClient client;
 
-    public AuthenticationPopupModel(AuthenticationServices authenticationServices)
+    public int ServicesCount => authenticationServices.AuthenticationsCount;
+    public AuthentificationCard CardPrefab => authenticationsInfo.Cart;
+
+    public IReadOnlyList<AuthenticationInfo> AuthenticationsInfo =>
+        authenticationsInfo.AuthenticationInfos;
+
+    public AuthenticationPopupModel(AuthenticationServices authenticationServices,
+        AuthenticationsInfo authenticationsInfo, IClient client)
     {
         Debug.LogError($"<color=yellow>Invoke ctor {nameof(AuthenticationPopupModel)}</color>");
         this.authenticationServices = authenticationServices;
-        Debug.LogError($"<color=green>Invoke ctor {authenticationServices.AuthenticationsCount}</color>");
+        this.authenticationsInfo = authenticationsInfo;
+        this.client = client;
+    }
+
+    public void SetAuthenticate(AuthenticationService serviceID)
+    {
+        authenticationServices.Authenticate(serviceID, client).Forget();
     }
 }
