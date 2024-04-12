@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 4857704550112331590}
   - component: {fileID: 7982110656223647799}
   m_Layer: 5
-  m_Name: AuthentificationView
+  m_Name: AuthentificationPopup
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
