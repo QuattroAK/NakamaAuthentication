@@ -50,3 +50,4 @@ MonoBehaviour:
   autoInjectGameObjects: []
   scriptableObjects:
   - {fileID: 11400000, guid: 4c7ba28027620204394b566fceb80781, type: 2}
+  - {fileID: 11400000, guid: 94d7d0ca619a4824298b04e6f503827a, type: 2}

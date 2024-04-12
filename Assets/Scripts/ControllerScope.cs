@@ -10,6 +10,7 @@ public class ControllerScope : LifetimeScope
     {
         Debug.LogError($"Start{nameof(ControllerScope)}");
         builder.RegisterEntryPoint<ConnectionController>();
+        builder.Register<PopupsController>(Lifetime.Singleton);
         builder.Register<AuthenticationServices>(Lifetime.Singleton);
         builder.Register<DeviceAuthentification>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
         builder.Register<EmailDeviceAuthentification>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();

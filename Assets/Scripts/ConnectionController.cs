@@ -3,9 +3,7 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using Nakama;
 using UnityEngine;
-using VContainer;
 using VContainer.Unity;
-using Object = UnityEngine.Object;
 
 public class ConnectionController : IAsyncStartable, IDisposable
 {
@@ -13,24 +11,22 @@ public class ConnectionController : IAsyncStartable, IDisposable
     private ISession session;
     private ISocket socket;
 
-    private readonly ConnectionInfo connectionInfo;
-    private readonly IObjectResolver container;
+    private readonly ConnectionInfo connection;
+    private readonly PopupsController popups;
 
-    public ConnectionController(ConnectionInfo connectionInfo, IObjectResolver container)
+    public ConnectionController(ConnectionInfo connection, PopupsController popups)
     {
-        this.connectionInfo = connectionInfo;
-        this.container = container;
+        this.connection = connection;
+        this.popups = popups;
     }
 
     async UniTask IAsyncStartable.StartAsync(CancellationToken ct)
     {
         Debug.LogError($"<color=green>Connection start</color>");
-        client = new Client(connectionInfo.Scheme, connectionInfo.Host, connectionInfo.Port, connectionInfo.ServerKey,
+        client = new Client(connection.Scheme, connection.Host, connection.Port, connection.ServerKey,
             UnityWebRequestAdapter.Instance);
 
-        await UniTask.Delay(TimeSpan.FromSeconds(2f), cancellationToken: ct);
-
-        var scope = Show<AuthenticationPopup, AuthenticationPopupModel>();
+        popups.Show<AuthenticationPopup, AuthenticationPopupModel>();
 
         try
         {
@@ -47,29 +43,6 @@ public class ConnectionController : IAsyncStartable, IDisposable
 
         Debug.Log(client);
         Debug.Log(socket);
-    }
-
-    private IObjectResolver Show<TComponent, RObject1>(params object[] arguments)
-        where TComponent : Component
-    {
-        var view = Object.Instantiate(connectionInfo.Prefab.gameObject);
-
-        var scope = container
-            .CreateScope(builder =>
-            {
-                builder.Register<RObject1>(Lifetime.Scoped).AsSelf().AsImplementedInterfaces();
-                foreach (var argument in arguments)
-                    builder.RegisterInstance(argument).AsImplementedInterfaces();
-            });
-
-        scope.InjectGameObject(view);
-
-        if (view.TryGetComponent(out TComponent c))
-        {
-            Debug.LogError($"Instantiate {nameof(TComponent)}");
-        }
-
-        return scope;
     }
 
     private async UniTaskVoid CloseSocket()
