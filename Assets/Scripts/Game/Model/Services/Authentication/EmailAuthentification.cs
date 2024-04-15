@@ -1,7 +1,7 @@
 using Cysharp.Threading.Tasks;
 using Nakama;
 
-public class EmailDeviceAuthentification : IAuthenticationService
+public class EmailAuthentification : IAuthenticationService
 {
     const string email = "email@example.com";
     const string password = "3bc8f72e95a9";
