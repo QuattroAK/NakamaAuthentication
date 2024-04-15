@@ -7,10 +7,10 @@ using UnityEngine.Serialization;
 public class AuthenticationsInfo : ScriptableObject
 {
     [SerializeField] private AuthenticationInfo[] authenticationInfos;
-    [SerializeField] private AuthentificationCard authentificationCart;
+    [SerializeField] private AuthentificationCard authentificationCard;
 
     public IReadOnlyList<AuthenticationInfo> AuthenticationInfos => authenticationInfos;
-    public AuthentificationCard Cart => authentificationCart;
+    public AuthentificationCard Card => authentificationCard;
 
     public bool TryGet(AuthenticationService authenticationService, out AuthenticationInfo info) =>
         (info = authenticationInfos.FirstOrDefault(info => info.ID == authenticationService)) != null;

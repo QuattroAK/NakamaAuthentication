@@ -10,7 +10,7 @@ public class AuthenticationPopupModel : IAuthenticationPopupModel
     private readonly IClient client;
 
     public int ServicesCount => authenticationServices.AuthenticationsCount;
-    public AuthentificationCard CardPrefab => authenticationsInfo.Cart;
+    public AuthentificationCard CardPrefab => authenticationsInfo.Card;
 
     public IReadOnlyList<AuthenticationInfo> AuthenticationsInfo =>
         authenticationsInfo.AuthenticationInfos;
