@@ -1,6 +1,9 @@
-public enum AuthenticationService
+namespace Game.Model.Services.Authentication
 {
-    None = 0,
-    Device = 1,
-    Email = 2
+    public enum AuthenticationService
+    {
+        None = 0,
+        Device = 1,
+        Email = 2
+    }
 }

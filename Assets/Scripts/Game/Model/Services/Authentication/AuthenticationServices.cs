@@ -5,24 +5,27 @@ using Nakama;
 using UnityEngine;
 using VContainer.Unity;
 
-public class AuthenticationServices
+namespace Game.Model.Services.Authentication
 {
-    private readonly IReadOnlyList<IAuthenticationService> authentications;
-    public int AuthenticationsCount => authentications.Count;
-
-    public AuthenticationServices(IReadOnlyList<IAuthenticationService> authentications)
+    public class AuthenticationServices
     {
-        Debug.LogError($"<color=yellow>Invoke ctor {nameof(AuthenticationServices)}</color>");
-        this.authentications = authentications;
-    }
+        private readonly IReadOnlyList<IAuthenticationService> authentications;
+        public int AuthenticationsCount => authentications.Count;
 
-    public async UniTask Authenticate(AuthenticationService id, IClient client)
-    {
-        // var service = authentications.FirstOrDefault(x => x.ID == id);
-        //
-        // if (service != null) 
-        //     await service.AuthenticateAsync(client);
-        await UniTask.Yield();
-        Debug.LogError($"Start {id}");
+        public AuthenticationServices(IReadOnlyList<IAuthenticationService> authentications)
+        {
+            Debug.LogError($"<color=yellow>Invoke ctor {nameof(AuthenticationServices)}</color>");
+            this.authentications = authentications;
+        }
+
+        public async UniTask Authenticate(AuthenticationService id, IClient client)
+        {
+            // var service = authentications.FirstOrDefault(x => x.ID == id);
+            //
+            // if (service != null) 
+            //     await service.AuthenticateAsync(client);
+            await UniTask.Yield();
+            Debug.LogError($"Start {id}");
+        }
     }
 }

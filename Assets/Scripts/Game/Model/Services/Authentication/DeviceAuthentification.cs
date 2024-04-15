@@ -1,15 +1,18 @@
-using System;
 using Cysharp.Threading.Tasks;
+using System;
 using Nakama;
 
-public class DeviceAuthentification : IAuthenticationService
+namespace Game.Model.Services.Authentication
 {
-    private readonly string deviceId = Guid.NewGuid().ToString();
-
-    public AuthenticationService ID => AuthenticationService.Device;
-
-    public async UniTask<ISession> AuthenticateAsync(IClient client)
+    public class DeviceAuthentification : IAuthenticationService
     {
-        return await client.AuthenticateDeviceAsync(deviceId);
+        private readonly string deviceId = Guid.NewGuid().ToString();
+
+        public AuthenticationService ID => AuthenticationService.Device;
+
+        public async UniTask<ISession> AuthenticateAsync(IClient client)
+        {
+            return await client.AuthenticateDeviceAsync(deviceId);
+        }
     }
 }

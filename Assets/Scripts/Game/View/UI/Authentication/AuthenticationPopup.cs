@@ -1,41 +1,47 @@
+using Game.Model.Services.Authentication;
+using Game.ViewModel.UI.Authentication;
+using VContainer.Unity;
 using UnityEngine;
 using VContainer;
-using VContainer.Unity;
 
-public class AuthenticationPopup : MonoBehaviour
+namespace Game.View.UI.Authentication
 {
-    [SerializeField] private RectTransform cardsParent;
-
-    [Inject] private readonly IAuthenticationPopupModel authenticationModel;
-    [Inject] private readonly IObjectResolver container;
-
-    private IScopedObjectResolver scope;
-
-    private void Start()
+    public class AuthenticationPopup : MonoBehaviour
     {
-        Debug.LogError(authenticationModel.ServicesCount);
+        [SerializeField] private AuthentificationCard cardPrefab;
+        [SerializeField] private RectTransform cardsParent;
 
-        for (int i = 0; i < authenticationModel.AuthenticationsInfo.Count; i++)
+        [Inject] private readonly IAuthenticationPopupModel authenticationModel;
+        [Inject] private readonly IObjectResolver container;
+
+        private IScopedObjectResolver scope;
+
+        private void Start()
         {
-            var card = Instantiate(authenticationModel.CardPrefab, cardsParent);
+            Debug.LogError(authenticationModel.ServicesCount);
 
-            scope = container.CreateScope(builder =>
+            for (int i = 0; i < authenticationModel.AuthenticationsInfo.Count; i++)
             {
-                builder.RegisterInstance(authenticationModel.AuthenticationsInfo[i]);
-            });
+                var card = Instantiate(cardPrefab, cardsParent);
 
-            scope.InjectGameObject(card.gameObject);
-            card.Onclick.AddListener(OnClickCardHandler);
+                scope = container.CreateScope(builder =>
+                {
+                    builder.RegisterInstance(authenticationModel.AuthenticationsInfo[i]);
+                });
+
+                scope.InjectGameObject(card.gameObject);
+                card.Onclick.AddListener(OnClickCardHandler);
+            }
         }
-    }
 
-    private void OnDestroy()
-    {
-        scope.Dispose();
-    }
+        private void OnDestroy()
+        {
+            scope.Dispose();
+        }
 
-    private void OnClickCardHandler(AuthenticationService service)
-    {
-        authenticationModel.SetAuthenticate(service);
+        private void OnClickCardHandler(AuthenticationService service)
+        {
+            authenticationModel.SetAuthenticate(service);
+        }
     }
 }
