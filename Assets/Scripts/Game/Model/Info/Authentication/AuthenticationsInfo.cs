@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Linq;
 using Game.Model.Services.Authentication;
 using UnityEngine;
@@ -10,9 +9,11 @@ namespace Game.Model.Info
     {
         [SerializeField] private AuthenticationInfo[] authenticationInfos;
 
-        public IReadOnlyList<AuthenticationInfo> AuthenticationInfos => authenticationInfos;
+        [SerializeField] private AuthenticationInfo defaultAuthenticationInfo;
 
-        public bool TryGet(AuthenticationService authenticationService, out AuthenticationInfo info) =>
-            (info = authenticationInfos.FirstOrDefault(info => info.ID == authenticationService)) != null;
+        public AuthenticationInfo DefaultAuthenticationInfo => defaultAuthenticationInfo;
+
+        public bool TryGet(AuthenticationService serviceID, out AuthenticationInfo info) =>
+            (info = authenticationInfos.FirstOrDefault(info => info.ID == serviceID)) != null;
     }
 }

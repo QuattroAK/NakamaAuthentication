@@ -1,5 +1,4 @@
-using Game.Model.Info;
-using Game.Model.Services.Authentication;
+using Game.ViewModel.UI.Authentication;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
@@ -12,17 +11,17 @@ namespace Game.View.UI.Authentication
         [SerializeField] private Image icon;
         [SerializeField] private Button button;
 
-        [Inject] private readonly AuthenticationInfo info;
+        [Inject] private readonly AuthenticationServiceInfo info;
 
-        public readonly UnityEvent<AuthenticationService> Onclick = new();
+        public readonly UnityEvent<string> OnPressed = new();
 
         public void Start()
         {
-            icon.sprite = info.Icon;
+            icon.sprite = info.ServiceIcon;
             button.onClick.AddListener(() =>
             {
-                Onclick?.Invoke(info.ID);
-                Debug.LogError($"{info.ID}");
+                OnPressed?.Invoke(info.ServiceID);
+                Debug.LogError($"{info.ServiceID}");
             });
         }
     }

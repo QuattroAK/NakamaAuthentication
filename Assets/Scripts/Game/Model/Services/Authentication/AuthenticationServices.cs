@@ -9,18 +9,16 @@ namespace Game.Model.Services.Authentication
 {
     public class AuthenticationServices
     {
-        private readonly IReadOnlyList<IAuthenticationService> authentications;
-        public int AuthenticationsCount => authentications.Count;
+        public IReadOnlyList<IAuthenticationService> Services { get; }
 
-        public AuthenticationServices(IReadOnlyList<IAuthenticationService> authentications)
+        public AuthenticationServices(IReadOnlyList<IAuthenticationService> services)
         {
-            Debug.LogError($"<color=yellow>Invoke ctor {nameof(AuthenticationServices)}</color>");
-            this.authentications = authentications;
+            Services = services;
         }
 
         public async UniTask Authenticate(AuthenticationService id, IClient client)
         {
-            // var service = authentications.FirstOrDefault(x => x.ID == id);
+            // var service = services.FirstOrDefault(x => x.ID == id);
             //
             // if (service != null) 
             //     await service.AuthenticateAsync(client);

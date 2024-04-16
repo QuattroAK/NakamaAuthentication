@@ -1,4 +1,4 @@
-using Game.Model.Services.Authentication;
+using System.Collections.Generic;
 using Game.ViewModel.UI.Authentication;
 using VContainer.Unity;
 using UnityEngine;
@@ -14,32 +14,32 @@ namespace Game.View.UI.Authentication
         [Inject] private readonly IAuthenticationPopupModel authenticationModel;
         [Inject] private readonly IObjectResolver container;
 
-        private IScopedObjectResolver scope;
+        private readonly List<IScopedObjectResolver> scopes = new();
 
         private void Start()
         {
-            Debug.LogError(authenticationModel.ServicesCount);
+            var servicesInfo = authenticationModel.GetAuthenticationsServiceInfos();
 
-            for (int i = 0; i < authenticationModel.AuthenticationsInfo.Count; i++)
+            for (var i = 0; i < servicesInfo.Count; i++)
             {
                 var card = Instantiate(cardPrefab, cardsParent);
 
-                scope = container.CreateScope(builder =>
-                {
-                    builder.RegisterInstance(authenticationModel.AuthenticationsInfo[i]);
-                });
+                var scope = container
+                    .CreateScope(builder => { builder.RegisterInstance(servicesInfo[i]); });
 
                 scope.InjectGameObject(card.gameObject);
-                card.Onclick.AddListener(OnClickCardHandler);
+                scopes.Add(scope);
+                card.OnPressed.AddListener(OnClickCardHandler);
             }
         }
 
         private void OnDestroy()
         {
-            scope.Dispose();
+            foreach (var scope in scopes)
+                scope.Dispose();
         }
 
-        private void OnClickCardHandler(AuthenticationService service)
+        private void OnClickCardHandler(string service)
         {
             authenticationModel.SetAuthenticate(service);
         }
