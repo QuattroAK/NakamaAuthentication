@@ -1,17 +1,20 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game.Model.Info;
 using Game.Model.Services.Authentication;
 using Nakama;
+using UnityEngine;
 
 namespace Game.ViewModel.UI.Authentication
 {
-    public class AuthenticationPopupModel : IAuthenticationPopupModel
+    public class AuthenticationPopupModel : IAuthenticationPopupModel, IDisposable
     {
         private readonly AuthenticationServices authenticationServices;
         private readonly AuthenticationsInfo authenticationsInfo;
         private readonly IClient client;
+        private readonly CancellationTokenSource cancellationToken = new();
 
         private List<AuthenticationServiceInfo> authenticationsServiceInfos;
 
@@ -43,8 +46,15 @@ namespace Game.ViewModel.UI.Authentication
         {
             if (Enum.TryParse(serviceID, out AuthenticationService ID))
             {
-                authenticationServices.Authenticate(ID, client).Forget();
+                authenticationServices.Authenticate(ID, client, cancellationToken.Token).Forget();
             }
+        }
+
+        public void Dispose()
+        {
+            Debug.LogError($"Dispose - {nameof(AuthenticationPopupModel)}");
+            cancellationToken?.Cancel();
+            cancellationToken?.Dispose();
         }
     }
 }

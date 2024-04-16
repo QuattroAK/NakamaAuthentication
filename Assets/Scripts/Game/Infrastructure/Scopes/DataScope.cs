@@ -11,10 +11,7 @@ namespace Game.Infrastructure.Scopes
         protected override void Configure(IContainerBuilder builder)
         {
             foreach (var info in scriptableObjects)
-            {
-                Debug.LogError($"Start{nameof(DataScope)}");
                 builder.RegisterInstance(info).As(info.GetType());
-            }
         }
     }
 }

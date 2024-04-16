@@ -1,6 +1,6 @@
 using System;
-using System.Threading;
 using Cysharp.Threading.Tasks;
+using Game.Model.Services.Authentication;
 using Game.View.UI.Authentication;
 using Game.ViewModel.UI.Authentication;
 using Nakama;
@@ -9,7 +9,7 @@ using VContainer.Unity;
 
 namespace Game.Infrastructure.Controllers
 {
-    public class ConnectionController : IAsyncStartable, IDisposable
+    public class ConnectionController : IStartable, IDisposable
     {
         private IClient client;
         private ISession session;
@@ -17,34 +17,48 @@ namespace Game.Infrastructure.Controllers
 
         private readonly ConnectionInfo connection;
         private readonly PopupsController popups;
+        private readonly AuthenticationServices authenticationServices;
 
-        public ConnectionController(ConnectionInfo connection, PopupsController popups)
+        public ConnectionController(ConnectionInfo connection, PopupsController popups,
+            AuthenticationServices authenticationServices)
         {
             this.connection = connection;
             this.popups = popups;
+            this.authenticationServices = authenticationServices;
         }
 
-        async UniTask IAsyncStartable.StartAsync(CancellationToken ct)
+        public void Start()
         {
             Debug.LogError($"<color=green>Connection start</color>");
+            Subscribe();
+
             client = new Client(connection.Scheme, connection.Host, connection.Port, connection.ServerKey,
                 UnityWebRequestAdapter.Instance);
 
+            var logger = new UnityLogger();
+            client.Logger = logger;
+            client.Timeout = 10;
+
             popups.Show<AuthenticationPopup, AuthenticationPopupModel>(client);
+        }
 
-            try
-            {
-                session = await client.AuthenticateDeviceAsync(SystemInfo.deviceUniqueIdentifier, canceller: ct);
-            }
-            catch (ApiResponseException ex)
-            {
-                Debug.LogFormat("Error authenticating device: {0}:{1}", ex.StatusCode, ex.Message);
-            }
+        private void Subscribe()
+        {
+            authenticationServices.OnAuthorization.AddListener(OnAuthorizationHandler);
+        }
 
-            Debug.Log($"Authenticated with Device ID COMPLETED - {session.UserId}");
+        private void OnAuthorizationHandler(ISession newSession, bool success)
+        {
+            if (!success) return;
+
+            session = newSession;
+            OpenSocketAsync().Forget();
+        }
+
+        private async UniTaskVoid OpenSocketAsync()
+        {
             socket = client.NewSocket();
             await socket.ConnectAsync(session);
-
             Debug.Log(client);
             Debug.Log(socket);
         }

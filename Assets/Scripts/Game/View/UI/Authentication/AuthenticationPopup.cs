@@ -20,12 +20,12 @@ namespace Game.View.UI.Authentication
         {
             var servicesInfo = authenticationModel.GetAuthenticationsServiceInfos();
 
-            for (var i = 0; i < servicesInfo.Count; i++)
+            foreach (var serviceInfo in servicesInfo)
             {
                 var card = Instantiate(cardPrefab, cardsParent);
 
                 var scope = container
-                    .CreateScope(builder => { builder.RegisterInstance(servicesInfo[i]); });
+                    .CreateScope(builder => { builder.RegisterInstance(serviceInfo); });
 
                 scope.InjectGameObject(card.gameObject);
                 scopes.Add(scope);
@@ -39,9 +39,9 @@ namespace Game.View.UI.Authentication
                 scope.Dispose();
         }
 
-        private void OnClickCardHandler(string service)
+        private void OnClickCardHandler(string serviceID)
         {
-            authenticationModel.SetAuthenticate(service);
+            authenticationModel.SetAuthenticate(serviceID);
         }
     }
 }
