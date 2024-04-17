@@ -6,7 +6,7 @@ using VContainer;
 
 namespace Game.View.UI.Authentication
 {
-    public class AuthentificationCard : MonoBehaviour
+    public class AuthenticationCard : MonoBehaviour
     {
         [SerializeField] private Image icon;
         [SerializeField] private Button button;

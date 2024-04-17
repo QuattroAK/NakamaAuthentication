@@ -2,14 +2,28 @@ using System.Collections.Generic;
 using Game.ViewModel.UI.Authentication;
 using VContainer.Unity;
 using UnityEngine;
+using UnityEngine.UI;
 using VContainer;
+using Text = TMPro.TextMeshProUGUI;
+using InputField = TMPro.TMP_InputField;
 
 namespace Game.View.UI.Authentication
 {
     public class AuthenticationPopup : MonoBehaviour
     {
-        [SerializeField] private AuthentificationCard cardPrefab;
+        [Header("Prefab")]
+        [SerializeField] private AuthenticationCard cardPrefab;
         [SerializeField] private RectTransform cardsParent;
+        
+        [Header("Inputs")]
+        [SerializeField] private InputField inputEmail;
+        [SerializeField] private InputField inputPassword;
+        
+        [Header("Buttons")]
+        [SerializeField] private Button backButton;
+
+        [Header("Text")] 
+        [SerializeField] private Text text;
 
         [Inject] private readonly IAuthenticationPopupModel authenticationModel;
         [Inject] private readonly IObjectResolver container;
