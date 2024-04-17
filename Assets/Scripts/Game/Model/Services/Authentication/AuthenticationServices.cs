@@ -27,7 +27,7 @@ namespace Game.Model.Services.Authentication
 
             try
             {
-                session = await service.AuthenticateAsync(client, ct);
+                session = await service.AuthenticateAsync(client, cancellationToken: ct);
             }
             catch (ApiResponseException ex)
             {

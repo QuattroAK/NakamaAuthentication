@@ -29,7 +29,7 @@ namespace Game.View.UI.Authentication
 
                 scope.InjectGameObject(card.gameObject);
                 scopes.Add(scope);
-                card.OnPressed.AddListener(OnClickCardHandler);
+                card.OnPressed.AddListener(SetAuthenticate);
             }
         }
 
@@ -39,7 +39,7 @@ namespace Game.View.UI.Authentication
                 scope.Dispose();
         }
 
-        private void OnClickCardHandler(string serviceID)
+        private void SetAuthenticate(string serviceID)
         {
             authenticationModel.SetAuthenticate(serviceID);
         }

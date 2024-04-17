@@ -5,11 +5,11 @@ using Nakama;
 
 namespace Game.Model.Services.Authentication
 {
-    public interface IAuthenticationService
+    public class EmailAuthentication : IAuthenticationService
     {
-        AuthenticationService ID { get; }
+        public AuthenticationService ID => AuthenticationService.Email;
 
-        UniTask<ISession> AuthenticateAsync(
+        public async UniTask<ISession> AuthenticateAsync(
             IClient client,
             string email = null,
             string password = null,
@@ -17,6 +17,9 @@ namespace Game.Model.Services.Authentication
             bool create = true,
             Dictionary<string, string> vars = null,
             RetryConfiguration retryConfiguration = null,
-            CancellationToken cancellationToken = default);
+            CancellationToken cancellationToken = default)
+        {
+            return await client.AuthenticateEmailAsync(email, password, canceller: cancellationToken);
+        }
     }
 }
