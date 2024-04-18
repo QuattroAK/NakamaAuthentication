@@ -2,10 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
-using Game.Model.Info;
+using Extensions;
+using Game.Model.Info.Authentication;
 using Game.Model.Services.Authentication;
 using Nakama;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace Game.ViewModel.UI.Authentication
 {
@@ -17,6 +19,7 @@ namespace Game.ViewModel.UI.Authentication
         private readonly CancellationTokenSource cancellationToken = new();
 
         private List<AuthenticationServiceInfo> authenticationsServiceInfos;
+        public UnityEvent<AuthenticationPopupState> OnChangeState { get; } = new();
 
         public AuthenticationPopupModel(AuthenticationServices authenticationServices,
             AuthenticationsInfo authenticationsInfo, IClient client)
@@ -25,6 +28,7 @@ namespace Game.ViewModel.UI.Authentication
             this.authenticationsInfo = authenticationsInfo;
             this.client = client;
         }
+
 
         public IReadOnlyList<AuthenticationServiceInfo> GetAuthenticationsServiceInfos()
         {
@@ -42,13 +46,32 @@ namespace Game.ViewModel.UI.Authentication
             return authenticationsServiceInfos;
         }
 
-        public void SetAuthenticate(string serviceID)
+        public void SetAuthenticate(string serviceId)
         {
-            if (Enum.TryParse(serviceID, out AuthenticationService ID))
-            {
-                authenticationServices.Authenticate(ID, client, cancellationToken.Token).Forget();
-            }
+            if (!serviceId.TryEnum(out AuthenticationService id)) return;
+
+            ChangeState(ResolveState(id));
+
+            if (!IsEmailService(id))
+                authenticationServices.Authenticate(id, client, cancellationToken.Token).Forget();
         }
+
+        private bool IsEmailService(AuthenticationService id) =>
+            id == AuthenticationService.Email;
+
+        private AuthenticationStateBase ResolveState(AuthenticationService id) => id switch
+        {
+            AuthenticationService.None => authenticationsInfo.LogInState,
+            AuthenticationService.Device => authenticationsInfo.DeviceState,
+            AuthenticationService.Email => authenticationsInfo.EmailState,
+            _ => authenticationsInfo.LogInState
+        };
+
+        private void ChangeState(AuthenticationStateBase state) =>
+            OnChangeState?.Invoke(new AuthenticationPopupState(state));
+
+        public void OnBack() =>
+            ChangeState(authenticationsInfo.LogInState);
 
         public void Dispose()
         {
