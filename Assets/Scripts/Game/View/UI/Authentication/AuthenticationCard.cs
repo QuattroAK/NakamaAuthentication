@@ -20,8 +20,8 @@ namespace Game.View.UI.Authentication
             icon.sprite = info.ServiceIcon;
             button.onClick.AddListener(() =>
             {
+                Debug.LogError($"On Click  - {info.ServiceID}");
                 OnPressed?.Invoke(info.ServiceID);
-                Debug.LogError($"{info.ServiceID}");
             });
         }
     }

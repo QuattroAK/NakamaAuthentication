@@ -21,6 +21,8 @@ namespace Game.ViewModel.UI.Authentication
         private List<AuthenticationServiceInfo> authenticationsServiceInfos;
         public UnityEvent<AuthenticationPopupState> OnChangeState { get; } = new();
 
+        private AuthenticationService currentServiceId;
+
         public AuthenticationPopupModel(AuthenticationServices authenticationServices,
             AuthenticationsInfo authenticationsInfo, IClient client)
         {
@@ -46,24 +48,42 @@ namespace Game.ViewModel.UI.Authentication
             return authenticationsServiceInfos;
         }
 
-        public void SetAuthenticate(string serviceId)
+        public void SetAuthenticate(string serviceId, (string email, string password) inputData)
         {
             if (!serviceId.TryEnum(out AuthenticationService id)) return;
+            currentServiceId = id;
 
-            ChangeState(ResolveState(id));
+            ChangeState(ResolveState(id, inputData));
 
             if (!IsEmailService(id))
+            {
                 authenticationServices.Authenticate(id, client, cancellationToken.Token).Forget();
+                return;
+            }
+
+            if (HasInputData(inputData))
+                authenticationServices.Authenticate(id, client, cancellationToken.Token, inputData).Forget();
         }
+
+        public void ValidateInputData((string email, string password) inputData)
+        {
+            ChangeState(ResolveState(currentServiceId, inputData));
+            Debug.LogError(currentServiceId);
+        }
+
+        private bool HasInputData((string email, string password) inputData) =>
+            !string.IsNullOrEmpty(inputData.email) && !string.IsNullOrEmpty(inputData.password);
 
         private bool IsEmailService(AuthenticationService id) =>
             id == AuthenticationService.Email;
 
-        private AuthenticationStateBase ResolveState(AuthenticationService id) => id switch
+        private AuthenticationStateBase ResolveState(AuthenticationService id,
+            (string email, string password) inputData) => id switch
         {
-            AuthenticationService.None => authenticationsInfo.LogInState,
+            AuthenticationService.Email => HasInputData(inputData)
+                ? authenticationsInfo.EmailCanOpenState
+                : authenticationsInfo.EmailState,
             AuthenticationService.Device => authenticationsInfo.DeviceState,
-            AuthenticationService.Email => authenticationsInfo.EmailState,
             _ => authenticationsInfo.LogInState
         };
 

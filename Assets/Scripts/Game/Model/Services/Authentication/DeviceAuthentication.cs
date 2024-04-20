@@ -14,8 +14,7 @@ namespace Game.Model.Services.Authentication
 
         public async UniTask<ISession> AuthenticateAsync(
             IClient client,
-            string email = null,
-            string password = null,
+            (string email, string password) inputData =default,
             string username = null,
             bool create = true,
             Dictionary<string, string> vars = null,

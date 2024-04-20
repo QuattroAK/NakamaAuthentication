@@ -1,6 +1,7 @@
 using System.Linq;
 using Game.Model.Services.Authentication;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Game.Model.Info.Authentication
 {
@@ -17,6 +18,7 @@ namespace Game.Model.Info.Authentication
         [SerializeField] private AuthenticationStateBase logInState;
         [SerializeField] private AuthenticationStateBase emailState;
         [SerializeField] private AuthenticationStateBase deviceState;
+        [SerializeField] private AuthenticationStateBase emailCanOpenState;
 
         public AuthenticationInfo DefaultAuthenticationInfo => defaultAuthenticationInfo;
 
@@ -25,6 +27,8 @@ namespace Game.Model.Info.Authentication
         public AuthenticationStateBase EmailState => emailState;
 
         public AuthenticationStateBase DeviceState => deviceState;
+
+        public AuthenticationStateBase EmailCanOpenState => emailCanOpenState;
 
         public bool TryGet(AuthenticationService serviceID, out AuthenticationInfo info) =>
             (info = authenticationInfos.FirstOrDefault(info => info.ID == serviceID)) != null;

@@ -11,33 +11,33 @@ namespace Game.View.UI.Authentication
 {
     public class AuthenticationPopup : MonoBehaviour
     {
-        [Header("Prefab")]
-        [SerializeField] private AuthenticationCard cardPrefab;
+        [Header("Prefab")] [SerializeField] private AuthenticationCard cardPrefab;
         [SerializeField] private RectTransform cardsParent;
 
-        [Header("Inputs")]
-        [SerializeField] private InputField inputEmail;
+        [Header("Inputs")] [SerializeField] private InputField inputEmail;
         [SerializeField] private InputField inputPassword;
 
-        [Header("Buttons")]
-        [SerializeField] private Button backButton;
+        [Header("Buttons")] [SerializeField] private Button backButton;
         [SerializeField] private Button enterButton;
 
-        [Header("Text")]
-        [SerializeField] private Text tileText;
+        [Header("Text")] [SerializeField] private Text tileText;
 
-        [Header("Panel")]
-        [SerializeField] private Image backgroundImage;
+        [Header("Panel")] [SerializeField] private Image backgroundImage;
 
         [Inject] private readonly IAuthenticationPopupModel authenticationModel;
         [Inject] private readonly IObjectResolver container;
 
         private readonly List<IScopedObjectResolver> scopes = new();
 
+        private string serviceID;
+
         private void Start()
         {
             authenticationModel.OnChangeState.AddListener(ApplyState);
             backButton.onClick.AddListener(OnClickBack);
+            enterButton.onClick.AddListener(SetAuthenticate);
+            inputEmail.onValueChanged.AddListener(ValidateInputData);
+            inputPassword.onValueChanged.AddListener(ValidateInputData);
             OnClickBack();
 
             var servicesInfo = authenticationModel.GetAuthenticationsServiceInfos();
@@ -51,8 +51,13 @@ namespace Game.View.UI.Authentication
 
                 scope.InjectGameObject(card.gameObject);
                 scopes.Add(scope);
-                card.OnPressed.AddListener(SetAuthenticate);
+                card.OnPressed.AddListener(SetAuthenticateId);
             }
+        }
+
+        private void ValidateInputData(string _)
+        {
+            authenticationModel.ValidateInputData((inputEmail.text, inputPassword.text));
         }
 
         private void OnDestroy()
@@ -61,14 +66,21 @@ namespace Game.View.UI.Authentication
                 scope.Dispose();
         }
 
-        private void SetAuthenticate(string serviceID)
+        private void SetAuthenticate()
         {
-            authenticationModel.SetAuthenticate(serviceID);
+            authenticationModel.SetAuthenticate(serviceID, (inputEmail.text, inputPassword.text));
+        }
+
+        private void SetAuthenticateId(string serviceID)
+        {
+            this.serviceID = serviceID;
+            SetAuthenticate();
         }
 
         private void OnClickBack()
         {
             authenticationModel.OnBack();
+            inputEmail.text = inputPassword.text = serviceID = string.Empty;
         }
 
         private void ApplyState(AuthenticationPopupState state)

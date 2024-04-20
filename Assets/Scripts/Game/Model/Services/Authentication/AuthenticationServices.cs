@@ -20,14 +20,18 @@ namespace Game.Model.Services.Authentication
             Services = services;
         }
 
-        public async UniTask Authenticate(AuthenticationService id, IClient client, CancellationToken ct)
+        public async UniTask Authenticate(
+            AuthenticationService id,
+            IClient client,
+            CancellationToken ct,
+            (string email, string password) inputData = default)
         {
             var service = Services.First(service => service.ID == id);
             Debug.LogError($"Start {id}");
 
             try
             {
-                session = await service.AuthenticateAsync(client, cancellationToken: ct);
+                session = await service.AuthenticateAsync(client, inputData, cancellationToken: ct);
             }
             catch (ApiResponseException ex)
             {

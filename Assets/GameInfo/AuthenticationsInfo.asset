@@ -34,7 +34,7 @@ MonoBehaviour:
     backButton: 1
     tileText: 0
     cards: 0
-    enter: 1
+    enter: 0
     backgroundColor: {r: 0.6666667, g: 0.81599617, b: 1, a: 1}
   deviceState:
     inputEmail: 0
@@ -44,3 +44,11 @@ MonoBehaviour:
     cards: 0
     enter: 0
     backgroundColor: {r: 0.9113126, g: 0.6666667, b: 1, a: 1}
+  emailCanOpenState:
+    inputEmail: 1
+    inputPassword: 1
+    backButton: 1
+    tileText: 0
+    cards: 0
+    enter: 1
+    backgroundColor: {r: 0.6666667, g: 0.8156863, b: 1, a: 1}
