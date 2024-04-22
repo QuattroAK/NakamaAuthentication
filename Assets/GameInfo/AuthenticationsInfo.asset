@@ -26,29 +26,51 @@ MonoBehaviour:
     backButton: 0
     tileText: 1
     cards: 1
-    enter: 0
-    backgroundColor: {r: 0.6650944, g: 1, b: 0.8149355, a: 1}
+    connectionSuccess: 0
+    connectionError: 0
+    backgroundColor: {r: 0.6666667, g: 0.8156863, b: 1, a: 1}
   emailState:
     inputEmail: 1
     inputPassword: 1
     backButton: 1
     tileText: 0
     cards: 0
-    enter: 0
-    backgroundColor: {r: 0.6666667, g: 0.81599617, b: 1, a: 1}
+    connectionSuccess: 0
+    connectionError: 0
+    backgroundColor: {r: 0.6666667, g: 0.8156863, b: 1, a: 1}
   deviceState:
     inputEmail: 0
     inputPassword: 0
     backButton: 0
     tileText: 0
     cards: 0
-    enter: 0
-    backgroundColor: {r: 0.9113126, g: 0.6666667, b: 1, a: 1}
+    connectionSuccess: 0
+    connectionError: 0
+    backgroundColor: {r: 0.6666667, g: 0.8156863, b: 1, a: 1}
   emailCanOpenState:
     inputEmail: 1
     inputPassword: 1
     backButton: 1
     tileText: 0
     cards: 0
-    enter: 1
+    connectionSuccess: 0
+    connectionError: 0
     backgroundColor: {r: 0.6666667, g: 0.8156863, b: 1, a: 1}
+  connectionSuccess:
+    inputEmail: 0
+    inputPassword: 0
+    backButton: 0
+    tileText: 0
+    cards: 0
+    connectionSuccess: 1
+    connectionError: 0
+    backgroundColor: {r: 0.6666667, g: 1, b: 0.8156863, a: 1}
+  connectionError:
+    inputEmail: 0
+    inputPassword: 0
+    backButton: 0
+    tileText: 0
+    cards: 0
+    connectionSuccess: 0
+    connectionError: 1
+    backgroundColor: {r: 1, g: 0.5238899, b: 0.4764151, a: 1}

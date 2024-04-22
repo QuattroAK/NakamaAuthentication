@@ -27,7 +27,7 @@ namespace Game.Model.Services.Authentication
             (string email, string password) inputData = default)
         {
             var service = Services.First(service => service.ID == id);
-            Debug.LogError($"Start {id}");
+            Debug.LogError($"Start - {id}, timeout - {client.Timeout}");
 
             try
             {
@@ -40,8 +40,10 @@ namespace Game.Model.Services.Authentication
             finally
             {
                 OnAuthorization?.Invoke(session, session != null);
-                if (session != null)
-                    Debug.Log($"Authenticated with COMPLETED - {session.UserId}");
+
+                Debug.LogError(session != null
+                    ? $"Authenticated with COMPLETED - {session.UserId}"
+                    : $"Authenticated failed");
             }
         }
     }

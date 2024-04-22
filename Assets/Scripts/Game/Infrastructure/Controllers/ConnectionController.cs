@@ -35,8 +35,7 @@ namespace Game.Infrastructure.Controllers
             client = new Client(connection.Scheme, connection.Host, connection.Port, connection.ServerKey,
                 UnityWebRequestAdapter.Instance);
 
-            var logger = new UnityLogger();
-            client.Logger = logger;
+            client.Logger = new UnityLogger();;
             client.Timeout = 10;
 
             popups.Show<AuthenticationPopup, AuthenticationPopupModel>(client);

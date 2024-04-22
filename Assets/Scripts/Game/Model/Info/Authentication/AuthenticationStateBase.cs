@@ -12,19 +12,18 @@ namespace Game.Model.Info.Authentication
         [SerializeField] private bool tileText;
         [SerializeField] private bool cards;
         [SerializeField] private bool enter;
+        [SerializeField] private bool connectionSuccess;
+        [SerializeField] private bool connectionError;
         [SerializeField] private Color backgroundColor;
 
         public bool InputEmail => inputEmail;
-
         public bool InputPassword => inputPassword;
-
         public bool BackButton => backButton;
-
         public bool TileText => tileText;
-
         public bool Cards => cards;
-
         public bool Enter => enter;
+        public bool ConnectionSuccess => connectionSuccess;
+        public bool ConnectionError => connectionError;
         public Color BackgroundColor => backgroundColor;
     }
 }

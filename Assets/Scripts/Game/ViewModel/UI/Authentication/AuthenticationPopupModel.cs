@@ -29,8 +29,13 @@ namespace Game.ViewModel.UI.Authentication
             this.authenticationServices = authenticationServices;
             this.authenticationsInfo = authenticationsInfo;
             this.client = client;
+            Subscribe();
         }
 
+        private void Subscribe()
+        {
+            authenticationServices.OnAuthorization.AddListener(OnAuthorizationHandler);
+        }
 
         public IReadOnlyList<AuthenticationServiceInfo> GetAuthenticationsServiceInfos()
         {
@@ -90,8 +95,16 @@ namespace Game.ViewModel.UI.Authentication
         private void ChangeState(AuthenticationStateBase state) =>
             OnChangeState?.Invoke(new AuthenticationPopupState(state));
 
-        public void OnBack() =>
+        public void OnBack()
+        {
+            currentServiceId = AuthenticationService.None;
             ChangeState(authenticationsInfo.LogInState);
+        }
+
+        private void OnAuthorizationHandler(ISession session, bool success)
+        {
+            ChangeState(success ? authenticationsInfo.ConnectionSuccess : authenticationsInfo.ConnectionError);
+        }
 
         public void Dispose()
         {

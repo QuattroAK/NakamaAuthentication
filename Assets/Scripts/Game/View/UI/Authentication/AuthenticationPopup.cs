@@ -11,18 +11,27 @@ namespace Game.View.UI.Authentication
 {
     public class AuthenticationPopup : MonoBehaviour
     {
-        [Header("Prefab")] [SerializeField] private AuthenticationCard cardPrefab;
+        [Header("Prefab")] 
+        [SerializeField] private AuthenticationCard cardPrefab;
         [SerializeField] private RectTransform cardsParent;
 
-        [Header("Inputs")] [SerializeField] private InputField inputEmail;
+        [Header("Inputs")] 
+        [SerializeField] private InputField inputEmail;
         [SerializeField] private InputField inputPassword;
 
-        [Header("Buttons")] [SerializeField] private Button backButton;
+        [Header("Buttons")] 
+        [SerializeField] private Button backButton;
         [SerializeField] private Button enterButton;
 
-        [Header("Text")] [SerializeField] private Text tileText;
+        [Header("Text")] 
+        [SerializeField] private Text tileText;
 
-        [Header("Panel")] [SerializeField] private Image backgroundImage;
+        [Header("Panel")] 
+        [SerializeField] private Image backgroundImage;
+
+        [Header("Objects")] 
+        [SerializeField] private GameObject connectionSuccess;
+        [SerializeField] private GameObject connectionError;
 
         [Inject] private readonly IAuthenticationPopupModel authenticationModel;
         [Inject] private readonly IObjectResolver container;
@@ -79,8 +88,8 @@ namespace Game.View.UI.Authentication
 
         private void OnClickBack()
         {
-            authenticationModel.OnBack();
             inputEmail.text = inputPassword.text = serviceID = string.Empty;
+            authenticationModel.OnBack();
         }
 
         private void ApplyState(AuthenticationPopupState state)
@@ -92,6 +101,8 @@ namespace Game.View.UI.Authentication
             enterButton.gameObject.SetActive(state.Enter);
             tileText.gameObject.SetActive(state.TileText);
             backgroundImage.color = state.BackgroundColor;
+            connectionError.SetActive(state.ConnectionError);
+            connectionSuccess.SetActive(state.ConnectionSuccess);
         }
     }
 }

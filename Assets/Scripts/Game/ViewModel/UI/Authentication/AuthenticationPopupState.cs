@@ -14,14 +14,18 @@ namespace Game.ViewModel.UI.Authentication
             Cards = state.Cards;
             BackgroundColor = state.BackgroundColor;
             Enter = state.Enter;
+            ConnectionError = state.ConnectionError;
+            ConnectionSuccess = state.ConnectionSuccess;
         }
 
+        public bool ConnectionSuccess { get; }
+        public bool ConnectionError { get; }
         public bool InputEmail { get; }
         public bool InputPassword { get; }
         public bool BackButton { get; }
         public bool TileText { get; }
         public bool Cards { get; }
         public Color BackgroundColor { get; }
-        public bool Enter { get; set; }
+        public bool Enter { get; }
     }
 }
