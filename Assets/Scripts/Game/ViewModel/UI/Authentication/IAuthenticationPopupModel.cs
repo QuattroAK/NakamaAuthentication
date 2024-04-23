@@ -4,7 +4,7 @@ using UnityEngine.Events;
 
 namespace Game.ViewModel.UI.Authentication
 {
-    public interface IAuthenticationPopupModel
+    public interface IAuthenticationPopupModel : IDisposable
     {
         UnityEvent<AuthenticationPopupState> OnChangeState { get; }
         IReadOnlyList<AuthenticationServiceInfo> GetAuthenticationsServiceInfos();

@@ -74,6 +74,8 @@ namespace Game.View.UI.Authentication
         {
             foreach (var scope in scopes)
                 scope.Dispose();
+            
+            authenticationModel.Dispose();
         }
 
         private void SetAuthenticate()

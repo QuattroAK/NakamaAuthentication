@@ -11,7 +11,7 @@ using UnityEngine.Events;
 
 namespace Game.ViewModel.UI.Authentication
 {
-    public class AuthenticationPopupModel : IAuthenticationPopupModel, IDisposable
+    public class AuthenticationPopupModel : IAuthenticationPopupModel
     {
         private readonly AuthenticationServices authenticationServices;
         private readonly AuthenticationsInfo authenticationsInfo;
