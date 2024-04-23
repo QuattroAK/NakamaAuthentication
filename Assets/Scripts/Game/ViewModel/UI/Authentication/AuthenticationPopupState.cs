@@ -16,8 +16,10 @@ namespace Game.ViewModel.UI.Authentication
             Enter = state.Enter;
             ConnectionError = state.ConnectionError;
             ConnectionSuccess = state.ConnectionSuccess;
+            ConnectionWaiting = state.ConnectionWaiting;
         }
 
+        public bool ConnectionWaiting { get; }
         public bool ConnectionSuccess { get; }
         public bool ConnectionError { get; }
         public bool InputEmail { get; }

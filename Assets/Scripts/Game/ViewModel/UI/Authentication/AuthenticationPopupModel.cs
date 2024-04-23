@@ -22,6 +22,8 @@ namespace Game.ViewModel.UI.Authentication
         public UnityEvent<AuthenticationPopupState> OnChangeState { get; } = new();
 
         private AuthenticationService currentServiceId;
+        private (string email, string password) inputData;
+        private bool connectionSuccess;
 
         public AuthenticationPopupModel(AuthenticationServices authenticationServices,
             AuthenticationsInfo authenticationsInfo, IClient client)
@@ -56,39 +58,49 @@ namespace Game.ViewModel.UI.Authentication
         public void SetAuthenticate(string serviceId, (string email, string password) inputData)
         {
             if (!serviceId.TryEnum(out AuthenticationService id)) return;
-            currentServiceId = id;
 
-            ChangeState(ResolveState(id, inputData));
+            this.inputData = inputData;
+            currentServiceId = id;
 
             if (!IsEmailService(id))
             {
                 authenticationServices.Authenticate(id, client, cancellationToken.Token).Forget();
-                return;
+            }
+            else
+            {
+                if (HasInputData())
+                    authenticationServices.Authenticate(id, client, cancellationToken.Token, inputData).Forget();
             }
 
-            if (HasInputData(inputData))
-                authenticationServices.Authenticate(id, client, cancellationToken.Token, inputData).Forget();
+            var state = ResolveState();
+            Debug.LogError(nameof(state));
+            ChangeState(state);
         }
 
         public void ValidateInputData((string email, string password) inputData)
         {
-            ChangeState(ResolveState(currentServiceId, inputData));
+            this.inputData = inputData;
+            ChangeState(ResolveState());
             Debug.LogError(currentServiceId);
         }
 
-        private bool HasInputData((string email, string password) inputData) =>
+        private bool HasInputData() =>
             !string.IsNullOrEmpty(inputData.email) && !string.IsNullOrEmpty(inputData.password);
 
         private bool IsEmailService(AuthenticationService id) =>
             id == AuthenticationService.Email;
 
-        private AuthenticationStateBase ResolveState(AuthenticationService id,
-            (string email, string password) inputData) => id switch
+        private AuthenticationStateBase ResolveState() => currentServiceId switch
         {
-            AuthenticationService.Email => HasInputData(inputData)
-                ? authenticationsInfo.EmailCanOpenState
-                : authenticationsInfo.EmailState,
-            AuthenticationService.Device => authenticationsInfo.DeviceState,
+            AuthenticationService.Email => connectionSuccess ? authenticationsInfo.ConnectionSuccess : 
+                authenticationServices.AuthorizationProgress ? authenticationsInfo.ConnectionWaitingState :
+                authenticationServices.IsSent ? authenticationsInfo.ConnectionError : 
+                HasInputData() ? authenticationsInfo.EmailCanOpenState : authenticationsInfo.EmailState,
+            
+            AuthenticationService.Device => connectionSuccess ? authenticationsInfo.ConnectionSuccess : 
+                authenticationServices.AuthorizationProgress ? authenticationsInfo.ConnectionWaitingState : 
+                authenticationsInfo.ConnectionError,
+            
             _ => authenticationsInfo.LogInState
         };
 
@@ -98,12 +110,13 @@ namespace Game.ViewModel.UI.Authentication
         public void OnBack()
         {
             currentServiceId = AuthenticationService.None;
-            ChangeState(authenticationsInfo.LogInState);
+            ChangeState(ResolveState());
         }
 
         private void OnAuthorizationHandler(ISession session, bool success)
         {
-            ChangeState(success ? authenticationsInfo.ConnectionSuccess : authenticationsInfo.ConnectionError);
+            connectionSuccess = success;
+            ChangeState(ResolveState());
         }
 
         public void Dispose()

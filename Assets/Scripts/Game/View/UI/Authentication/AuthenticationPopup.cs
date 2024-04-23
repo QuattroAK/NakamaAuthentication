@@ -32,6 +32,7 @@ namespace Game.View.UI.Authentication
         [Header("Objects")] 
         [SerializeField] private GameObject connectionSuccess;
         [SerializeField] private GameObject connectionError;
+        [SerializeField] private GameObject connectionWaiting;
 
         [Inject] private readonly IAuthenticationPopupModel authenticationModel;
         [Inject] private readonly IObjectResolver container;
@@ -103,6 +104,7 @@ namespace Game.View.UI.Authentication
             backgroundImage.color = state.BackgroundColor;
             connectionError.SetActive(state.ConnectionError);
             connectionSuccess.SetActive(state.ConnectionSuccess);
+            connectionWaiting.SetActive(state.ConnectionWaiting);
         }
     }
 }

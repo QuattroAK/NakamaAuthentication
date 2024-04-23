@@ -14,6 +14,8 @@ namespace Game.Model.Services.Authentication
         public IReadOnlyList<IAuthenticationService> Services { get; }
 
         public readonly UnityEvent<ISession, bool> OnAuthorization = new();
+        public bool AuthorizationProgress { get; private set; } = false;
+        public bool IsSent { get; private set; } = false;
 
         public AuthenticationServices(IReadOnlyList<IAuthenticationService> services)
         {
@@ -29,6 +31,9 @@ namespace Game.Model.Services.Authentication
             var service = Services.First(service => service.ID == id);
             Debug.LogError($"Start - {id}, timeout - {client.Timeout}");
 
+            AuthorizationProgress = true;
+            IsSent = true;
+
             try
             {
                 session = await service.AuthenticateAsync(client, inputData, cancellationToken: ct);
@@ -39,7 +44,9 @@ namespace Game.Model.Services.Authentication
             }
             finally
             {
+                AuthorizationProgress = false;
                 OnAuthorization?.Invoke(session, session != null);
+                IsSent = false;
 
                 Debug.LogError(session != null
                     ? $"Authenticated with COMPLETED - {session.UserId}"

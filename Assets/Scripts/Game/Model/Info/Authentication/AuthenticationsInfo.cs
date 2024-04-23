@@ -21,6 +21,7 @@ namespace Game.Model.Info.Authentication
         [SerializeField] private AuthenticationStateBase emailCanOpenState;
         [SerializeField] private AuthenticationStateBase connectionSuccess;
         [SerializeField] private AuthenticationStateBase connectionError;
+        [SerializeField] private AuthenticationStateBase connectionWaitingState;
 
         public AuthenticationInfo DefaultAuthenticationInfo => defaultAuthenticationInfo;
 
@@ -35,6 +36,8 @@ namespace Game.Model.Info.Authentication
         public AuthenticationStateBase ConnectionSuccess => connectionSuccess;
 
         public AuthenticationStateBase ConnectionError => connectionError;
+
+        public AuthenticationStateBase ConnectionWaitingState => connectionWaitingState;
 
         public bool TryGet(AuthenticationService serviceID, out AuthenticationInfo info) =>
             (info = authenticationInfos.FirstOrDefault(info => info.ID == serviceID)) != null;

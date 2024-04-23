@@ -14,6 +14,7 @@ namespace Game.Model.Info.Authentication
         [SerializeField] private bool enter;
         [SerializeField] private bool connectionSuccess;
         [SerializeField] private bool connectionError;
+        [SerializeField] private bool connectionWaiting;
         [SerializeField] private Color backgroundColor;
 
         public bool InputEmail => inputEmail;
@@ -25,5 +26,6 @@ namespace Game.Model.Info.Authentication
         public bool ConnectionSuccess => connectionSuccess;
         public bool ConnectionError => connectionError;
         public Color BackgroundColor => backgroundColor;
+        public bool ConnectionWaiting => connectionWaiting;
     }
 }
