@@ -1,8 +1,7 @@
 using Game.Infrastructure.Controllers;
 using Game.Model.Services.Authentication;
-using VContainer.Unity;
-using UnityEngine;
 using VContainer;
+using VContainer.Unity;
 
 namespace Game.Infrastructure.Scopes
 {
@@ -10,12 +9,12 @@ namespace Game.Infrastructure.Scopes
     {
         protected override void Configure(IContainerBuilder builder)
         {
-            Debug.LogError($"Start{nameof(ControllerScope)}");
             builder.RegisterEntryPoint<ConnectionController>();
             builder.Register<PopupsController>(Lifetime.Singleton);
             builder.Register<AuthenticationServices>(Lifetime.Singleton);
             builder.Register<DeviceAuthentication>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
             builder.Register<EmailAuthentication>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
+            builder.Register<GoogleAuthentication>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
         }
     }
 }

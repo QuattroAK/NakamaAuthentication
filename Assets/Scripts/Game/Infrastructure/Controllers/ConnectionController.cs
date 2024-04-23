@@ -29,7 +29,6 @@ namespace Game.Infrastructure.Controllers
 
         public void Start()
         {
-            Debug.LogError($"<color=green>Connection start</color>");
             Subscribe();
 
             client = new Client(connection.Scheme, connection.Host, connection.Port, connection.ServerKey,

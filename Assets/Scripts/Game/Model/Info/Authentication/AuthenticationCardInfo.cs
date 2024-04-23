@@ -2,10 +2,10 @@ using System;
 using Game.Model.Services.Authentication;
 using UnityEngine;
 
-namespace Game.Model.Info
+namespace Game.Model.Info.Authentication
 {
     [Serializable]
-    public class AuthenticationInfo
+    public class AuthenticationCardInfo
     {
         [SerializeField] private AuthenticationService id;
         [SerializeField] private Sprite icon;

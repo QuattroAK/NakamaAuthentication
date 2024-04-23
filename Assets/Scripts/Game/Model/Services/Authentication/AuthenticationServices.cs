@@ -29,7 +29,7 @@ namespace Game.Model.Services.Authentication
             (string email, string password) inputData = default)
         {
             var service = Services.First(service => service.ID == id);
-            Debug.LogError($"Start - {id}, timeout - {client.Timeout}");
+            Debug.Log($"Start - {id}, timeout - {client.Timeout}");
 
             AuthorizationProgress = true;
             IsSent = true;
@@ -48,9 +48,10 @@ namespace Game.Model.Services.Authentication
                 OnAuthorization?.Invoke(session, session != null);
                 IsSent = false;
 
-                Debug.LogError(session != null
-                    ? $"Authenticated with COMPLETED - {session.UserId}"
-                    : $"Authenticated failed");
+                if (session != null)
+                    Debug.Log($"<color=green>Authenticated with COMPLETED - {session.UserId}</color>");
+                else
+                    Debug.LogError($"Authenticated failed");
             }
         }
     }

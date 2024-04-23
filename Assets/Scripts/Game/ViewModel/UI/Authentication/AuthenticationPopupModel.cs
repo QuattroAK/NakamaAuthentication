@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
@@ -18,7 +17,7 @@ namespace Game.ViewModel.UI.Authentication
         private readonly IClient client;
         private readonly CancellationTokenSource cancellationToken = new();
 
-        private List<AuthenticationServiceInfo> authenticationsServiceInfos;
+        private Dictionary<string, Sprite> authenticationsCardsInfo;
         public UnityEvent<AuthenticationPopupState> OnChangeState { get; } = new();
 
         private AuthenticationService currentServiceId;
@@ -39,20 +38,19 @@ namespace Game.ViewModel.UI.Authentication
             authenticationServices.OnAuthorization.AddListener(OnAuthorizationHandler);
         }
 
-        public IReadOnlyList<AuthenticationServiceInfo> GetAuthenticationsServiceInfos()
+        public IReadOnlyDictionary<string, Sprite> GetAuthenticationsCardsInfo()
         {
-            authenticationsServiceInfos =
-                new List<AuthenticationServiceInfo>(authenticationServices.Services.Count);
-
+            authenticationsCardsInfo = new(authenticationServices.Services.Count);
+            
             foreach (var service in authenticationServices.Services)
             {
-                authenticationsServiceInfos.Add(authenticationsInfo.TryGet(service.ID, out var serviceInfo)
-                    ? new AuthenticationServiceInfo(serviceInfo.ID.ToString(), serviceInfo.Icon)
-                    : new AuthenticationServiceInfo(service.ID.ToString(),
-                        authenticationsInfo.DefaultAuthenticationInfo.Icon));
+                authenticationsCardsInfo[service.ID.ToString()] =
+                    authenticationsInfo.TryGet(service.ID, out var serviceInfo)
+                        ? serviceInfo.Icon
+                        : authenticationsInfo.MockAuthenticationCardInfo.Icon;
             }
 
-            return authenticationsServiceInfos;
+            return authenticationsCardsInfo;
         }
 
         public void SetAuthenticate(string serviceId, (string email, string password) inputData)
@@ -72,16 +70,14 @@ namespace Game.ViewModel.UI.Authentication
                     authenticationServices.Authenticate(id, client, cancellationToken.Token, inputData).Forget();
             }
 
-            var state = ResolveState();
-            Debug.LogError(nameof(state));
-            ChangeState(state);
+            ChangeState(ResolveState());
         }
 
         public void ValidateInputData((string email, string password) inputData)
         {
             this.inputData = inputData;
             ChangeState(ResolveState());
-            Debug.LogError(currentServiceId);
+            Debug.Log(currentServiceId);
         }
 
         private bool HasInputData() =>
@@ -92,15 +88,15 @@ namespace Game.ViewModel.UI.Authentication
 
         private AuthenticationStateBase ResolveState() => currentServiceId switch
         {
-            AuthenticationService.Email => connectionSuccess ? authenticationsInfo.ConnectionSuccess : 
+            AuthenticationService.Email => connectionSuccess ? authenticationsInfo.ConnectionSuccess :
                 authenticationServices.AuthorizationProgress ? authenticationsInfo.ConnectionWaitingState :
-                authenticationServices.IsSent ? authenticationsInfo.ConnectionError : 
+                authenticationServices.IsSent ? authenticationsInfo.ConnectionError :
                 HasInputData() ? authenticationsInfo.EmailCanOpenState : authenticationsInfo.EmailState,
-            
-            AuthenticationService.Device => connectionSuccess ? authenticationsInfo.ConnectionSuccess : 
-                authenticationServices.AuthorizationProgress ? authenticationsInfo.ConnectionWaitingState : 
+
+            AuthenticationService.Device => connectionSuccess ? authenticationsInfo.ConnectionSuccess :
+                authenticationServices.AuthorizationProgress ? authenticationsInfo.ConnectionWaitingState :
                 authenticationsInfo.ConnectionError,
-            
+
             _ => authenticationsInfo.LogInState
         };
 
@@ -121,7 +117,7 @@ namespace Game.ViewModel.UI.Authentication
 
         public void Dispose()
         {
-            Debug.LogError($"Dispose - {nameof(AuthenticationPopupModel)}");
+            Debug.Log($"Dispose - {nameof(AuthenticationPopupModel)}");
             cancellationToken?.Cancel();
             cancellationToken?.Dispose();
         }

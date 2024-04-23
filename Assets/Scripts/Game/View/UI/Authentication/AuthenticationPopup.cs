@@ -50,14 +50,14 @@ namespace Game.View.UI.Authentication
             inputPassword.onValueChanged.AddListener(ValidateInputData);
             OnClickBack();
 
-            var servicesInfo = authenticationModel.GetAuthenticationsServiceInfos();
+            var cardsInfo = authenticationModel.GetAuthenticationsCardsInfo();
 
-            foreach (var serviceInfo in servicesInfo)
+            foreach (var cardInfo in cardsInfo)
             {
                 var card = Instantiate(cardPrefab, cardsParent);
 
                 var scope = container
-                    .CreateScope(builder => { builder.RegisterInstance(serviceInfo); });
+                    .CreateScope(builder => { builder.RegisterInstance(cardInfo); });
 
                 scope.InjectGameObject(card.gameObject);
                 scopes.Add(scope);

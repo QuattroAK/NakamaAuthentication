@@ -4,6 +4,7 @@ namespace Game.Model.Services.Authentication
     {
         None = 0,
         Device = 1,
-        Email = 2
+        Email = 2,
+        Google = 3,
     }
 }
