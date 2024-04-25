@@ -21,6 +21,9 @@ namespace Game.Model.Services.Authentication
             return await client.AuthenticateEmailAsync(
                 inputData.email,
                 inputData.password,
+                username,
+                vars: vars,
+                retryConfiguration: retryConfiguration,
                 canceller: cancellationToken);
         }
     }

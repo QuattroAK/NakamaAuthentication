@@ -14,14 +14,19 @@ namespace Game.Model.Services.Authentication
 
         public async UniTask<ISession> AuthenticateAsync(
             IClient client,
-            (string email, string password) inputData =default,
+            (string email, string password) inputData = default,
             string username = null,
             bool create = true,
             Dictionary<string, string> vars = null,
             RetryConfiguration retryConfiguration = null,
             CancellationToken cancellationToken = default)
         {
-            return await client.AuthenticateDeviceAsync(deviceId, canceller: cancellationToken);
+            return await client.AuthenticateDeviceAsync(
+                deviceId,
+                username,
+                vars: vars,
+                retryConfiguration: retryConfiguration,
+                canceller: cancellationToken);
         }
     }
 }

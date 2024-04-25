@@ -19,10 +19,13 @@ namespace Game.ViewModel.UI.Authentication
 
         private Dictionary<string, Sprite> authenticationsCardsInfo;
         public UnityEvent<AuthenticationPopupState> OnChangeState { get; } = new();
+        public UnityEvent<string> authenticationMessageError { get; } = new();
 
         private AuthenticationService currentServiceId;
         private (string email, string password) inputData;
         private bool connectionSuccess;
+
+        private IAuthenticationResult authenticationResult;
 
         public AuthenticationPopupModel(AuthenticationServices authenticationServices,
             AuthenticationsInfo authenticationsInfo, IClient client)
@@ -35,13 +38,13 @@ namespace Game.ViewModel.UI.Authentication
 
         private void Subscribe()
         {
-            authenticationServices.OnAuthorization.AddListener(OnAuthorizationHandler);
+            authenticationServices.OnAuthentication.AddListener(OnAuthenticationHandler);
         }
 
         public IReadOnlyDictionary<string, Sprite> GetAuthenticationsCardsInfo()
         {
             authenticationsCardsInfo = new(authenticationServices.Services.Count);
-            
+
             foreach (var service in authenticationServices.Services)
             {
                 authenticationsCardsInfo[service.ID.ToString()] =
@@ -109,15 +112,21 @@ namespace Game.ViewModel.UI.Authentication
             ChangeState(ResolveState());
         }
 
-        private void OnAuthorizationHandler(ISession session, bool success)
+        private void OnAuthenticationHandler(IAuthenticationResult result)
         {
-            connectionSuccess = success;
+            connectionSuccess = result.IsSuccess;
+            authenticationResult = result;
+
+            if (!authenticationResult.IsSuccess && authenticationResult.Exception is ApiResponseException)
+                authenticationMessageError.Invoke(authenticationResult.ErrorMessage);
+
             ChangeState(ResolveState());
         }
 
         public void Dispose()
         {
             Debug.Log($"Dispose - {nameof(AuthenticationPopupModel)}");
+            authenticationServices.OnAuthentication.RemoveListener(OnAuthenticationHandler);
             cancellationToken?.Cancel();
             cancellationToken?.Dispose();
         }

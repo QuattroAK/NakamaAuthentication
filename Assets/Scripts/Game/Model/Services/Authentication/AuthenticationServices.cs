@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -13,9 +14,11 @@ namespace Game.Model.Services.Authentication
         private ISession session;
         public IReadOnlyList<IAuthenticationService> Services { get; }
 
-        public readonly UnityEvent<ISession, bool> OnAuthorization = new();
+        public readonly UnityEvent<IAuthenticationResult> OnAuthentication = new();
         public bool AuthorizationProgress { get; private set; } = false;
         public bool IsSent { get; private set; } = false;
+
+        private IAuthenticationResult result;
 
         public AuthenticationServices(IReadOnlyList<IAuthenticationService> services)
         {
@@ -34,24 +37,37 @@ namespace Game.Model.Services.Authentication
             AuthorizationProgress = true;
             IsSent = true;
 
+            var retryConfiguration = new RetryConfiguration(
+                500,
+                5,
+                (x, y) => Debug.LogError($"Attempt to connect to the server - {x}, {y}"));
+
             try
             {
-                session = await service.AuthenticateAsync(client, inputData, cancellationToken: ct);
+                session = await service.AuthenticateAsync(client, inputData, retryConfiguration: retryConfiguration,
+                    cancellationToken: ct);
+                result = new AuthenticationResult(session);
             }
             catch (ApiResponseException ex)
             {
-                Debug.LogFormat("Error authenticating: {0}:{1}", ex.StatusCode, ex.Message);
+                result = new AuthenticationResult(ex);
+                Debug.LogError($"Error authenticating: {ex}");
+            }
+            catch (Exception ex)
+            {
+                result = new AuthenticationResult(ex);
+                Debug.LogError($"Error: {ex.Message}");
             }
             finally
             {
                 AuthorizationProgress = false;
-                OnAuthorization?.Invoke(session, session != null);
+                OnAuthentication?.Invoke(result);
                 IsSent = false;
 
                 if (session != null)
                     Debug.Log($"<color=green>Authenticated with COMPLETED - {session.UserId}</color>");
                 else
-                    Debug.LogError($"Authenticated failed");
+                    Debug.LogError($"Failed");
             }
         }
     }

@@ -42,14 +42,14 @@ namespace Game.Infrastructure.Controllers
 
         private void Subscribe()
         {
-            authenticationServices.OnAuthorization.AddListener(OnAuthorizationHandler);
+            authenticationServices.OnAuthentication.AddListener(OnAuthorizationHandler);
         }
 
-        private void OnAuthorizationHandler(ISession newSession, bool success)
+        private void OnAuthorizationHandler(IAuthenticationResult result)
         {
-            if (!success) return;
+            if (!result.IsSuccess) return;
 
-            session = newSession;
+            session = result.Session;
             OpenSocketAsync().Forget();
         }
 
