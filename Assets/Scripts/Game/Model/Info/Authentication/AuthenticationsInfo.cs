@@ -20,6 +20,7 @@ namespace Game.Model.Info.Authentication
         [SerializeField] private AuthenticationStateBase emailCanOpenState;
         [SerializeField] private AuthenticationStateBase connectionSuccess;
         [SerializeField] private AuthenticationStateBase connectionError;
+        [SerializeField] private AuthenticationStateBase authenticationError;
         [SerializeField] private AuthenticationStateBase connectionWaitingState;
 
         private Dictionary<AuthenticationService, AuthenticationCardInfo> authenticationCardsCache;
@@ -31,6 +32,7 @@ namespace Game.Model.Info.Authentication
         public AuthenticationStateBase ConnectionSuccess => connectionSuccess;
         public AuthenticationStateBase ConnectionError => connectionError;
         public AuthenticationStateBase ConnectionWaitingState => connectionWaitingState;
+        public AuthenticationStateBase AuthenticationError => authenticationError;
 
         public bool TryGet(AuthenticationService serviceID, out AuthenticationCardInfo cardInfo) =>
             authenticationCardsCache.TryGetValue(serviceID, out cardInfo);

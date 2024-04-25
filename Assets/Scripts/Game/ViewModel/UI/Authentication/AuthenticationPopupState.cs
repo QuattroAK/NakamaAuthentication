@@ -17,6 +17,7 @@ namespace Game.ViewModel.UI.Authentication
             ConnectionError = state.ConnectionError;
             ConnectionSuccess = state.ConnectionSuccess;
             ConnectionWaiting = state.ConnectionWaiting;
+            AuthenticationError = state.AuthenticationError;
         }
 
         public bool ConnectionWaiting { get; }
@@ -29,5 +30,6 @@ namespace Game.ViewModel.UI.Authentication
         public bool Cards { get; }
         public Color BackgroundColor { get; }
         public bool Enter { get; }
+        public bool AuthenticationError { get; }
     }
 }

@@ -17,15 +17,14 @@ namespace Game.ViewModel.UI.Authentication
         private readonly IClient client;
         private readonly CancellationTokenSource cancellationToken = new();
 
-        private Dictionary<string, Sprite> authenticationsCardsInfo;
-        public UnityEvent<AuthenticationPopupState> OnChangeState { get; } = new();
-        public UnityEvent<string> authenticationMessageError { get; } = new();
-
         private AuthenticationService currentServiceId;
         private (string email, string password) inputData;
+        private IAuthenticationResult authenticationResult;
+        private Dictionary<string, Sprite> authenticationsCardsInfo;
         private bool connectionSuccess;
 
-        private IAuthenticationResult authenticationResult;
+        public UnityEvent<AuthenticationPopupState> OnChangeState { get; } = new();
+        public UnityEvent<string> AuthenticationMessageError { get; } = new();
 
         public AuthenticationPopupModel(AuthenticationServices authenticationServices,
             AuthenticationsInfo authenticationsInfo, IClient client)
@@ -63,7 +62,7 @@ namespace Game.ViewModel.UI.Authentication
             this.inputData = inputData;
             currentServiceId = id;
 
-            if (!IsEmailService(id))
+            if (!IsEmailService())
             {
                 authenticationServices.Authenticate(id, client, cancellationToken.Token).Forget();
             }
@@ -80,20 +79,20 @@ namespace Game.ViewModel.UI.Authentication
         {
             this.inputData = inputData;
             ChangeState(ResolveState());
-            Debug.Log(currentServiceId);
         }
 
         private bool HasInputData() =>
             !string.IsNullOrEmpty(inputData.email) && !string.IsNullOrEmpty(inputData.password);
 
-        private bool IsEmailService(AuthenticationService id) =>
-            id == AuthenticationService.Email;
+        private bool IsEmailService() =>
+            currentServiceId == AuthenticationService.Email;
 
         private AuthenticationStateBase ResolveState() => currentServiceId switch
         {
             AuthenticationService.Email => connectionSuccess ? authenticationsInfo.ConnectionSuccess :
                 authenticationServices.AuthorizationProgress ? authenticationsInfo.ConnectionWaitingState :
-                authenticationServices.IsSent ? authenticationsInfo.ConnectionError :
+                authenticationServices.IsSent ? authenticationResult.Exception is ApiResponseException ? 
+                    authenticationsInfo.AuthenticationError : authenticationsInfo.ConnectionError :
                 HasInputData() ? authenticationsInfo.EmailCanOpenState : authenticationsInfo.EmailState,
 
             AuthenticationService.Device => connectionSuccess ? authenticationsInfo.ConnectionSuccess :
@@ -118,14 +117,13 @@ namespace Game.ViewModel.UI.Authentication
             authenticationResult = result;
 
             if (!authenticationResult.IsSuccess && authenticationResult.Exception is ApiResponseException)
-                authenticationMessageError.Invoke(authenticationResult.ErrorMessage);
+                AuthenticationMessageError.Invoke(authenticationResult.ErrorMessage);
 
             ChangeState(ResolveState());
         }
 
         public void Dispose()
         {
-            Debug.Log($"Dispose - {nameof(AuthenticationPopupModel)}");
             authenticationServices.OnAuthentication.RemoveListener(OnAuthenticationHandler);
             cancellationToken?.Cancel();
             cancellationToken?.Dispose();

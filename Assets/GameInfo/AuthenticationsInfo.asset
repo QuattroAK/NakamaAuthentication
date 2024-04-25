@@ -30,6 +30,7 @@ MonoBehaviour:
     connectionSuccess: 0
     connectionError: 0
     connectionWaiting: 0
+    authenticationError: 0
     backgroundColor: {r: 0.6666667, g: 0.8156863, b: 1, a: 1}
   emailState:
     inputEmail: 1
@@ -41,6 +42,7 @@ MonoBehaviour:
     connectionSuccess: 0
     connectionError: 0
     connectionWaiting: 0
+    authenticationError: 0
     backgroundColor: {r: 0.6666667, g: 0.8156863, b: 1, a: 1}
   emailCanOpenState:
     inputEmail: 1
@@ -52,6 +54,7 @@ MonoBehaviour:
     connectionSuccess: 0
     connectionError: 0
     connectionWaiting: 0
+    authenticationError: 0
     backgroundColor: {r: 0.6666667, g: 0.8156863, b: 1, a: 1}
   connectionSuccess:
     inputEmail: 0
@@ -63,6 +66,7 @@ MonoBehaviour:
     connectionSuccess: 1
     connectionError: 0
     connectionWaiting: 0
+    authenticationError: 0
     backgroundColor: {r: 0.6666667, g: 1, b: 0.8156863, a: 1}
   connectionError:
     inputEmail: 0
@@ -74,7 +78,20 @@ MonoBehaviour:
     connectionSuccess: 0
     connectionError: 1
     connectionWaiting: 0
+    authenticationError: 0
     backgroundColor: {r: 1, g: 0.5238899, b: 0.4764151, a: 1}
+  authenticationError:
+    inputEmail: 1
+    inputPassword: 1
+    backButton: 1
+    tileText: 0
+    cards: 0
+    enter: 1
+    connectionSuccess: 0
+    connectionError: 0
+    connectionWaiting: 0
+    authenticationError: 1
+    backgroundColor: {r: 0.6666667, g: 0.8156863, b: 1, a: 1}
   connectionWaitingState:
     inputEmail: 0
     inputPassword: 0
@@ -85,4 +102,5 @@ MonoBehaviour:
     connectionSuccess: 0
     connectionError: 0
     connectionWaiting: 1
+    authenticationError: 0
     backgroundColor: {r: 1, g: 0.97815585, b: 0.5801887, a: 1}

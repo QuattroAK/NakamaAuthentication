@@ -8,7 +8,7 @@ namespace Game.ViewModel.UI.Authentication
     public interface IAuthenticationPopupModel : IDisposable
     {
         UnityEvent<AuthenticationPopupState> OnChangeState { get; }
-        UnityEvent<string> authenticationMessageError { get; }
+        UnityEvent<string> AuthenticationMessageError { get; }
         IReadOnlyDictionary<string, Sprite> GetAuthenticationsCardsInfo();
         void SetAuthenticate(string serviceId, (string email, string password) inputData);
         void ValidateInputData((string email, string password) inputData);

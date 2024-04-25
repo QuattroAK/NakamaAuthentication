@@ -25,6 +25,7 @@ namespace Game.View.UI.Authentication
 
         [Header("Text")] 
         [SerializeField] private Text tileText;
+        [SerializeField] private Text errorMessage;
 
         [Header("Panel")] 
         [SerializeField] private Image backgroundImage;
@@ -44,6 +45,7 @@ namespace Game.View.UI.Authentication
         private void Start()
         {
             authenticationModel.OnChangeState.AddListener(ApplyState);
+            authenticationModel.AuthenticationMessageError.AddListener(ShowErrorMessage);
             backButton.onClick.AddListener(OnClickBack);
             enterButton.onClick.AddListener(SetAuthenticate);
             inputEmail.onValueChanged.AddListener(ValidateInputData);
@@ -95,6 +97,9 @@ namespace Game.View.UI.Authentication
             authenticationModel.OnBack();
         }
 
+        private void ShowErrorMessage(string message) =>
+            errorMessage.text = message;
+
         private void ApplyState(AuthenticationPopupState state)
         {
             cardsParent.gameObject.SetActive(state.Cards);
@@ -107,6 +112,7 @@ namespace Game.View.UI.Authentication
             connectionError.SetActive(state.ConnectionError);
             connectionSuccess.SetActive(state.ConnectionSuccess);
             connectionWaiting.SetActive(state.ConnectionWaiting);
+            errorMessage.gameObject.SetActive(state.AuthenticationError);
         }
     }
 }
