@@ -48,8 +48,8 @@ namespace Game.View.UI.Authentication
             authenticationModel.AuthenticationMessageError.AddListener(ShowErrorMessage);
             backButton.onClick.AddListener(OnClickBack);
             enterButton.onClick.AddListener(SetAuthenticate);
-            inputEmail.onValueChanged.AddListener(ValidateInputData);
-            inputPassword.onValueChanged.AddListener(ValidateInputData);
+            inputEmail.onValueChanged.AddListener(SetInputData);
+            inputPassword.onValueChanged.AddListener(SetInputData);
             OnClickBack();
 
             var cardsInfo = authenticationModel.GetAuthenticationsCardsInfo();
@@ -67,9 +67,9 @@ namespace Game.View.UI.Authentication
             }
         }
 
-        private void ValidateInputData(string _)
+        private void SetInputData(string _)
         {
-            authenticationModel.ValidateInputData((inputEmail.text, inputPassword.text));
+            authenticationModel.SetInputData((inputEmail.text, inputPassword.text));
         }
 
         private void OnDestroy()

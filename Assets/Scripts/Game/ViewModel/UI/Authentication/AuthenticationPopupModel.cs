@@ -75,7 +75,7 @@ namespace Game.ViewModel.UI.Authentication
             ChangeState(ResolveState());
         }
 
-        public void ValidateInputData((string email, string password) inputData)
+        public void SetInputData((string email, string password) inputData)
         {
             this.inputData = inputData;
             ChangeState(ResolveState());
@@ -117,7 +117,7 @@ namespace Game.ViewModel.UI.Authentication
             authenticationResult = result;
 
             if (!authenticationResult.IsSuccess && authenticationResult.Exception is ApiResponseException)
-                AuthenticationMessageError.Invoke(authenticationResult.ErrorMessage);
+                AuthenticationMessageError?.Invoke(authenticationResult.ErrorMessage);
 
             ChangeState(ResolveState());
         }
