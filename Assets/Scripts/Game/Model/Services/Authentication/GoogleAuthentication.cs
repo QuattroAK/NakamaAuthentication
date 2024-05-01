@@ -25,7 +25,15 @@ namespace Game.Model.Services.Authentication
             CancellationToken cancellationToken = default)
         {
             this.cancellationToken = cancellationToken;
-            PlayGamesPlatform.Instance.Authenticate(ProcessAuthentication);
+
+            try
+            {
+                PlayGamesPlatform.Instance.Authenticate(ProcessAuthentication);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError(ex.Message);
+            }
 
             await UniTask.WaitUntil(() => !string.IsNullOrEmpty(token),
                 cancellationToken: this.cancellationToken);
@@ -54,7 +62,7 @@ namespace Game.Model.Services.Authentication
             }
             else
             {
-                Debug.Log($"Failed, try Manually");
+                Debug.LogError($"Failed, try Manually");
                 PlayGamesPlatform.Instance.ManuallyAuthenticate(ProcessManuallyAuthentication);
             }
         }
@@ -72,7 +80,7 @@ namespace Game.Model.Services.Authentication
             }
             else
             {
-                Debug.Log($"Manually is failed");
+                Debug.LogError($"Manually is failed");
                 if (!cancellationToken.IsCancellationRequested)
                     throw new OperationCanceledException(token);
             }
