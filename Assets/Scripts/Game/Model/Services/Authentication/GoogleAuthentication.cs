@@ -28,6 +28,8 @@ namespace Game.Model.Services.Authentication
 
             try
             {
+                PlayGamesPlatform.Activate();
+                PlayGamesPlatform.DebugLogEnabled = true;
                 PlayGamesPlatform.Instance.Authenticate(ProcessAuthentication);
             }
             catch (Exception ex)
@@ -62,7 +64,8 @@ namespace Game.Model.Services.Authentication
             }
             else
             {
-                Debug.LogError($"Failed, try Manually");
+                Debug.LogError($"Log in failed, try Manually");
+                Debug.LogError($"{status}");
                 PlayGamesPlatform.Instance.ManuallyAuthenticate(ProcessManuallyAuthentication);
             }
         }
@@ -81,8 +84,7 @@ namespace Game.Model.Services.Authentication
             else
             {
                 Debug.LogError($"Manually is failed");
-                if (!cancellationToken.IsCancellationRequested)
-                    throw new OperationCanceledException(token);
+                Debug.LogError($"{status}");
             }
         }
     }
