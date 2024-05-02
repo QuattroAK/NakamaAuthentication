@@ -13,7 +13,6 @@ MonoBehaviour:
   m_Name: ConnectionInfo
   m_EditorClassIdentifier: 
   scheme: http
-  host: localhost
+  host: 127.0.0.1
   port: 7350
   serverKey: defaultkey
-  preafab: {fileID: 7982110656223647799, guid: 0e0d06afdebb40c4b94af20fb0e7a27b, type: 3}
