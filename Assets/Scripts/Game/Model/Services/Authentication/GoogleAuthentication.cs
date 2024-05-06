@@ -12,8 +12,14 @@ namespace Game.Model.Services.Authentication
     public class GoogleAuthentication : IAuthenticationService
     {
         public AuthenticationService ID => AuthenticationService.Google;
-        private string token;
         private CancellationToken cancellationToken;
+
+        public GoogleAuthentication()
+        {
+            PlayGamesPlatform.Activate();
+            PlayGamesPlatform.DebugLogEnabled = true;
+            Debug.Log($"Invoke ctor {nameof(GoogleAuthentication)}");
+        }
 
         public async UniTask<ISession> AuthenticateAsync(
             IClient client,
@@ -26,66 +32,60 @@ namespace Game.Model.Services.Authentication
         {
             this.cancellationToken = cancellationToken;
 
-            try
-            {
-                PlayGamesPlatform.Activate();
-                PlayGamesPlatform.DebugLogEnabled = true;
-                PlayGamesPlatform.Instance.Authenticate(ProcessAuthentication);
-            }
-            catch (Exception ex)
-            {
-                Debug.LogError(ex.Message);
-            }
+            var authenticationToken = await GetGooglePlayGameAuthenticationTokenAsync();
 
-            await UniTask.WaitUntil(() => !string.IsNullOrEmpty(token),
-                cancellationToken: this.cancellationToken);
-
-            Debug.Log($"Token pre start - {token}");
-            Debug.Log($"Start - {token}");
-
-            if (string.IsNullOrEmpty(token))
+            if (string.IsNullOrEmpty(authenticationToken))
                 return null;
 
-            return await client.AuthenticateGoogleAsync(token, username, vars: vars,
+            return await client.AuthenticateGoogleAsync(authenticationToken, username, vars: vars,
                 retryConfiguration: retryConfiguration,
                 canceller: cancellationToken);
         }
 
-        private void ProcessAuthentication(SignInStatus status)
+        private async UniTask<string> GetGooglePlayGameAuthenticationTokenAsync()
         {
-            if (status == SignInStatus.Success)
+            var newToken = string.Empty;
+            PlayGamesPlatform.Instance.Authenticate(status =>
             {
-                PlayGamesPlatform.Instance.RequestServerSideAccess(true, tokenId =>
+                if (status == SignInStatus.Success)
                 {
-                    token = tokenId;
-                    Debug.Log($"log in Successful");
-                    Debug.Log($"Token - {token}");
-                });
-            }
-            else
-            {
-                Debug.LogError($"Log in failed, try Manually");
-                Debug.LogError($"{status}");
-                PlayGamesPlatform.Instance.ManuallyAuthenticate(ProcessManuallyAuthentication);
-            }
+                    RequestAuthenticationToken(true, SetToken);
+                }
+                else
+                {
+                    Debug.LogError($"Google log in failed, try manually");
+                    PlayGamesPlatform.Instance.ManuallyAuthenticate(newStatus =>
+                    {
+                        if (newStatus == SignInStatus.Success)
+                        {
+                            RequestAuthenticationToken(true, SetToken);
+                        }
+                        else
+                        {
+                            if (!cancellationToken.IsCancellationRequested)
+                                throw new Exception("Google manually authenticate is failed");
+                        }
+                    });
+                }
+
+                void SetToken(string token)
+                {
+                    newToken = token;
+                    Debug.Log($"Log in successful - {newToken}");
+                }
+            });
+
+            await UniTask.WaitUntil(() =>
+                {
+                    Debug.LogError("Wait token");
+                    return !string.IsNullOrEmpty(newToken);
+                },
+                cancellationToken: cancellationToken);
+
+            return newToken;
         }
 
-        private void ProcessManuallyAuthentication(SignInStatus status)
-        {
-            if (status == SignInStatus.Success)
-            {
-                PlayGamesPlatform.Instance.RequestServerSideAccess(true, tokenId =>
-                {
-                    token = tokenId;
-                    Debug.Log($"log in Successful");
-                    Debug.Log($"Token - {token}");
-                });
-            }
-            else
-            {
-                Debug.LogError($"Manually is failed");
-                Debug.LogError($"{status}");
-            }
-        }
+        private void RequestAuthenticationToken(bool forceRefreshToken, Action<string> callback) =>
+            PlayGamesPlatform.Instance.RequestServerSideAccess(forceRefreshToken, callback);
     }
 }
