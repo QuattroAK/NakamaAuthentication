@@ -98,6 +98,10 @@ namespace Game.ViewModel.UI.Authentication
             AuthenticationService.Device => connectionSuccess ? authenticationsInfo.ConnectionSuccess :
                 authenticationServices.AuthorizationProgress ? authenticationsInfo.ConnectionWaitingState :
                 authenticationsInfo.ConnectionError,
+            
+            AuthenticationService.Google => connectionSuccess ? authenticationsInfo.ConnectionSuccess :
+                authenticationServices.AuthorizationProgress ? authenticationsInfo.ConnectionWaitingState :
+                authenticationsInfo.ConnectionError,
 
             _ => authenticationsInfo.LogInState
         };
