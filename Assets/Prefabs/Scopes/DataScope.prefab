@@ -49,6 +49,6 @@ MonoBehaviour:
   autoRun: 1
   autoInjectGameObjects: []
   scriptableObjects:
-  - {fileID: 11400000, guid: 4c7ba28027620204394b566fceb80781, type: 2}
+  - {fileID: 11400000, guid: bb62e5b4cd8200946bf210a76ecdb2d1, type: 2}
   - {fileID: 11400000, guid: 94d7d0ca619a4824298b04e6f503827a, type: 2}
   - {fileID: 11400000, guid: 379e86bd893b4b04bb533e06a470367f, type: 2}

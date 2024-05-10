@@ -1,6 +1,7 @@
 using System;
 using Cysharp.Threading.Tasks;
 using Game.Model.Services.Authentication;
+using Game.Model.Services.Connection;
 using Game.View.UI.Authentication;
 using Game.ViewModel.UI.Authentication;
 using Nakama;
@@ -15,14 +16,14 @@ namespace Game.Infrastructure.Controllers
         private ISession session;
         private ISocket socket;
 
-        private readonly ConnectionInfo connection;
+        private readonly ClientFactory clientFactory;
         private readonly PopupsController popups;
         private readonly AuthenticationServices authenticationServices;
 
-        public ConnectionController(ConnectionInfo connection, PopupsController popups,
+        public ConnectionController(ClientFactory clientFactory, PopupsController popups,
             AuthenticationServices authenticationServices)
         {
-            this.connection = connection;
+            this.clientFactory = clientFactory;
             this.popups = popups;
             this.authenticationServices = authenticationServices;
         }
@@ -30,22 +31,16 @@ namespace Game.Infrastructure.Controllers
         public void Start()
         {
             Subscribe();
-
-            client = new Client(connection.Scheme, connection.Host, connection.Port, connection.ServerKey,
-                UnityWebRequestAdapter.Instance);
-
-            client.Logger = new UnityLogger();;
-            client.Timeout = 10;
-
+            client = clientFactory.GetNakamaClient(UnityWebRequestAdapter.Instance, new UnityLogger());
             popups.Show<AuthenticationPopup, AuthenticationPopupModel>(client);
         }
 
         private void Subscribe()
         {
-            authenticationServices.OnAuthentication.AddListener(OnAuthorizationHandler);
+            authenticationServices.OnAuthentication.AddListener(OpenSocket);
         }
 
-        private void OnAuthorizationHandler(IAuthenticationResult result)
+        private void OpenSocket(IAuthenticationResult result)
         {
             if (!result.IsSuccess) return;
 
