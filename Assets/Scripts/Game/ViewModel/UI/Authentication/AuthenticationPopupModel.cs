@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
-using Extensions;
+using Core.Extensions;
 using Game.Model.Info.Authentication;
 using Game.Model.Services.Authentication;
 using Nakama;

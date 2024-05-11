@@ -1,6 +1,6 @@
 using System;
 
-namespace Extensions
+namespace Core.Extensions
 {
     public static class StringExtensions
     {
