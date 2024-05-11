@@ -4,6 +4,7 @@ using Cysharp.Threading.Tasks;
 using Core.Extensions;
 using Game.Model.Info.Authentication;
 using Game.Model.Services.Authentication;
+using Game.Model.Services.Connection;
 using Nakama;
 using UnityEngine;
 using UnityEngine.Events;
@@ -15,6 +16,7 @@ namespace Game.ViewModel.UI.Authentication
         private readonly AuthenticationServices authenticationServices;
         private readonly AuthenticationsInfo authenticationsInfo;
         private readonly IClient client;
+        private readonly SessionTokenRefresher sessionTokenRefresher;
         private readonly CancellationTokenSource cancellationToken = new();
 
         private AuthenticationService currentServiceId;
@@ -27,12 +29,14 @@ namespace Game.ViewModel.UI.Authentication
         public UnityEvent<string> AuthenticationMessageError { get; } = new();
 
         public AuthenticationPopupModel(AuthenticationServices authenticationServices,
-            AuthenticationsInfo authenticationsInfo, IClient client)
+            AuthenticationsInfo authenticationsInfo, IClient client, SessionTokenRefresher sessionTokenRefresher)
         {
             this.authenticationServices = authenticationServices;
             this.authenticationsInfo = authenticationsInfo;
             this.client = client;
+            this.sessionTokenRefresher = sessionTokenRefresher;
             Subscribe();
+            AuthenticateRestore();
         }
 
         private void Subscribe()
@@ -40,9 +44,16 @@ namespace Game.ViewModel.UI.Authentication
             authenticationServices.OnAuthentication.AddListener(OnAuthenticationHandler);
         }
 
+        private void AuthenticateRestore()
+        {
+            if (sessionTokenRefresher.TryGetSessionTokens<SessionTokens>(out var tokensData))
+                authenticationServices.AuthenticateRestoreAsync(client, tokensData.AuthToken, tokensData.RefreshToken,
+                    cancellationToken.Token).Forget();
+        }
+
         public IReadOnlyDictionary<string, Sprite> GetAuthenticationsCardsInfo()
         {
-            authenticationsCardsInfo = new(authenticationServices.Services.Count);
+            authenticationsCardsInfo = new Dictionary<string, Sprite>(authenticationServices.Services.Count);
 
             foreach (var service in authenticationServices.Services)
             {
@@ -64,12 +75,12 @@ namespace Game.ViewModel.UI.Authentication
 
             if (!IsEmailService())
             {
-                authenticationServices.Authenticate(id, client, cancellationToken.Token).Forget();
+                authenticationServices.AuthenticateAsync(id, client, cancellationToken.Token).Forget();
             }
             else
             {
                 if (HasInputData())
-                    authenticationServices.Authenticate(id, client, cancellationToken.Token, inputData).Forget();
+                    authenticationServices.AuthenticateAsync(id, client, cancellationToken.Token, inputData).Forget();
             }
 
             ChangeState(ResolveState());
@@ -91,14 +102,15 @@ namespace Game.ViewModel.UI.Authentication
         {
             AuthenticationService.Email => connectionSuccess ? authenticationsInfo.ConnectionSuccess :
                 authenticationServices.AuthorizationProgress ? authenticationsInfo.ConnectionWaitingState :
-                authenticationServices.IsSent ? authenticationResult.Exception is ApiResponseException ? 
-                    authenticationsInfo.AuthenticationError : authenticationsInfo.ConnectionError :
+                authenticationServices.IsSent ? authenticationResult.Exception is ApiResponseException
+                    ? authenticationsInfo.AuthenticationError
+                    : authenticationsInfo.ConnectionError :
                 HasInputData() ? authenticationsInfo.EmailCanOpenState : authenticationsInfo.EmailState,
 
             AuthenticationService.Device => connectionSuccess ? authenticationsInfo.ConnectionSuccess :
                 authenticationServices.AuthorizationProgress ? authenticationsInfo.ConnectionWaitingState :
                 authenticationsInfo.ConnectionError,
-            
+
             AuthenticationService.Google => connectionSuccess ? authenticationsInfo.ConnectionSuccess :
                 authenticationServices.AuthorizationProgress ? authenticationsInfo.ConnectionWaitingState :
                 authenticationsInfo.ConnectionError,

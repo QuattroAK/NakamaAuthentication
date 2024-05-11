@@ -1,5 +1,3 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
@@ -45,7 +43,7 @@ namespace Core.Persistence
         }
 
         private string GetPathToFile(string fileName) =>
-            Path.Combine(dataPath, string.Concat(fileName, ".", fileExtension));
+            Path.Combine(dataPath, string.Concat(fileName, fileExtension));
 
         public IEnumerable<string> GetSavedFiles()
         {
