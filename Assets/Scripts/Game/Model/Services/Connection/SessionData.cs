@@ -1,8 +1,9 @@
 namespace Game.Model.Services.Connection
 {
-    public class SessionTokensData
+    public class SessionData
     {
         public string AuthToken { get; set; }
         public string RefreshToken { get; set; }
+        public string AuthenticationId { get; set; }
     }
 }

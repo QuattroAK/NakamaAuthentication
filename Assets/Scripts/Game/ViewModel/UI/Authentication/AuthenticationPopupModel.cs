@@ -46,9 +46,14 @@ namespace Game.ViewModel.UI.Authentication
 
         private void AuthenticateRestore()
         {
-            if (sessionTokensProvider.TryGetTokens<SessionTokensData>(out var tokensData))
-                authenticationServices.AuthenticateRestoreAsync(client, tokensData.AuthToken, tokensData.RefreshToken,
-                    cancellationToken.Token).Forget();
+            if (!sessionTokensProvider.TryGetTokens<SessionData>(out var tokensData)) return;
+
+            if (!tokensData.AuthenticationId.TryEnum(out currentServiceId)) return;
+
+            authenticationServices.AuthenticateRestoreAsync(client, tokensData.AuthToken, tokensData.RefreshToken,
+                cancellationToken.Token).Forget();
+            
+            ChangeState(ResolveState());
         }
 
         public IReadOnlyDictionary<string, Sprite> GetAuthenticationsCardsInfo()
@@ -123,6 +128,9 @@ namespace Game.ViewModel.UI.Authentication
 
         public void OnBack()
         {
+            if (sessionTokensProvider.TryGetTokens<SessionData>(out var _))
+                return;
+            
             currentServiceId = AuthenticationService.None;
             ChangeState(ResolveState());
         }
@@ -131,12 +139,16 @@ namespace Game.ViewModel.UI.Authentication
         {
             connectionSuccess = result.IsSuccess;
             authenticationResult = result;
-            
-            if (!result.IsSuccess)
-                return;
 
-            sessionTokensProvider.SaveTokens(new SessionTokensData
-                { AuthToken = result.Session.AuthToken, RefreshToken = result.Session.RefreshToken });
+            if (result.IsSuccess)
+            {
+                sessionTokensProvider.SaveTokens(new SessionData
+                {
+                    AuthToken = result.Session.AuthToken,
+                    RefreshToken = result.Session.RefreshToken,
+                    AuthenticationId = currentServiceId.ToString()
+                });
+            }
 
             if (!authenticationResult.IsSuccess && authenticationResult.Exception is ApiResponseException)
                 AuthenticationMessageError?.Invoke(authenticationResult.ErrorMessage);
