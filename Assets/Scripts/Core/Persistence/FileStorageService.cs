@@ -14,6 +14,7 @@ namespace Core.Persistence
         public FileStorageService(ISerializer serializer)
         {
             this.serializer = serializer;
+            Debug.LogError($"FilePath - {dataPath}");
         }
 
         public void Save<T>(T data)
