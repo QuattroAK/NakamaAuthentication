@@ -16,7 +16,7 @@ namespace Game.ViewModel.UI.Authentication
         private readonly AuthenticationServices authenticationServices;
         private readonly AuthenticationsInfo authenticationsInfo;
         private readonly IClient client;
-        private readonly SessionTokenRefresher sessionTokenRefresher;
+        private readonly SessionTokensProvider sessionTokensProvider;
         private readonly CancellationTokenSource cancellationToken = new();
 
         private AuthenticationService currentServiceId;
@@ -29,12 +29,12 @@ namespace Game.ViewModel.UI.Authentication
         public UnityEvent<string> AuthenticationMessageError { get; } = new();
 
         public AuthenticationPopupModel(AuthenticationServices authenticationServices,
-            AuthenticationsInfo authenticationsInfo, IClient client, SessionTokenRefresher sessionTokenRefresher)
+            AuthenticationsInfo authenticationsInfo, IClient client, SessionTokensProvider sessionTokensProvider)
         {
             this.authenticationServices = authenticationServices;
             this.authenticationsInfo = authenticationsInfo;
             this.client = client;
-            this.sessionTokenRefresher = sessionTokenRefresher;
+            this.sessionTokensProvider = sessionTokensProvider;
             Subscribe();
             AuthenticateRestore();
         }
@@ -46,7 +46,7 @@ namespace Game.ViewModel.UI.Authentication
 
         private void AuthenticateRestore()
         {
-            if (sessionTokenRefresher.TryGetSessionTokens<SessionTokens>(out var tokensData))
+            if (sessionTokensProvider.TryGetTokens<SessionTokensData>(out var tokensData))
                 authenticationServices.AuthenticateRestoreAsync(client, tokensData.AuthToken, tokensData.RefreshToken,
                     cancellationToken.Token).Forget();
         }
@@ -131,6 +131,12 @@ namespace Game.ViewModel.UI.Authentication
         {
             connectionSuccess = result.IsSuccess;
             authenticationResult = result;
+            
+            if (!result.IsSuccess)
+                return;
+
+            sessionTokensProvider.SaveTokens(new SessionTokensData
+                { AuthToken = result.Session.AuthToken, RefreshToken = result.Session.RefreshToken });
 
             if (!authenticationResult.IsSuccess && authenticationResult.Exception is ApiResponseException)
                 AuthenticationMessageError?.Invoke(authenticationResult.ErrorMessage);
