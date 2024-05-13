@@ -18,7 +18,6 @@ namespace Game.Model.Services.Authentication
         {
             PlayGamesPlatform.Activate();
             PlayGamesPlatform.DebugLogEnabled = true;
-            Debug.Log($"Invoke ctor {nameof(GoogleAuthentication)}");
         }
 
         public async UniTask<ISession> AuthenticateAsync(
@@ -75,12 +74,7 @@ namespace Game.Model.Services.Authentication
                 }
             });
 
-            await UniTask.WaitUntil(() =>
-                {
-                    Debug.LogError("Wait token");
-                    return !string.IsNullOrEmpty(newToken);
-                },
-                cancellationToken: cancellationToken);
+            await UniTask.WaitUntil(() => !string.IsNullOrEmpty(newToken), cancellationToken: cancellationToken);
 
             return newToken;
         }
