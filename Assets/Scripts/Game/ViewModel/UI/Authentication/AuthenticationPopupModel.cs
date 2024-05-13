@@ -15,9 +15,9 @@ namespace Game.ViewModel.UI.Authentication
     {
         private readonly AuthenticationServices authenticationServices;
         private readonly AuthenticationsInfo authenticationsInfo;
-        private readonly IClient client;
         private readonly SessionTokensProvider sessionTokensProvider;
         private readonly CancellationTokenSource cancellationToken = new();
+        private readonly IClient client;
 
         private AuthenticationService currentServiceId;
         private (string email, string password) inputData;
@@ -33,10 +33,17 @@ namespace Game.ViewModel.UI.Authentication
         {
             this.authenticationServices = authenticationServices;
             this.authenticationsInfo = authenticationsInfo;
-            this.client = client;
             this.sessionTokensProvider = sessionTokensProvider;
+            this.client = client;
+        }
+
+        public void Start()
+        {
             Subscribe();
-            AuthenticateRestore();
+            SetDefaultState();
+
+            if (HasSessionData(out var sessionData))
+                AuthenticateRestore(sessionData);
         }
 
         private void Subscribe()
@@ -44,13 +51,14 @@ namespace Game.ViewModel.UI.Authentication
             authenticationServices.OnAuthentication.AddListener(OnAuthenticationHandler);
         }
 
-        private void AuthenticateRestore()
+        private void SetDefaultState() =>
+            Return();
+
+        private void AuthenticateRestore(SessionData sessionData)
         {
-            if (!sessionTokensProvider.TryGetTokens<SessionData>(out var tokensData)) return;
+            if (!sessionData.AuthenticationId.TryEnum(out currentServiceId)) return;
 
-            if (!tokensData.AuthenticationId.TryEnum(out currentServiceId)) return;
-
-            authenticationServices.AuthenticateRestoreAsync(client, tokensData.AuthToken, tokensData.RefreshToken,
+            authenticationServices.AuthenticateRestoreAsync(client, sessionData.AuthToken, sessionData.RefreshToken,
                 cancellationToken.Token).Forget();
             
             ChangeState(ResolveState());
@@ -100,6 +108,9 @@ namespace Game.ViewModel.UI.Authentication
         private bool HasInputData() =>
             !string.IsNullOrEmpty(inputData.email) && !string.IsNullOrEmpty(inputData.password);
 
+        private bool HasSessionData(out SessionData sessionData) =>
+            sessionTokensProvider.TryGetTokens(out sessionData);
+
         private bool IsEmailService() =>
             currentServiceId == AuthenticationService.Email;
 
@@ -126,11 +137,8 @@ namespace Game.ViewModel.UI.Authentication
         private void ChangeState(AuthenticationStateBase state) =>
             OnChangeState?.Invoke(new AuthenticationPopupState(state));
 
-        public void OnBack()
+        public void Return()
         {
-            if (sessionTokensProvider.TryGetTokens<SessionData>(out var _))
-                return;
-            
             currentServiceId = AuthenticationService.None;
             ChangeState(ResolveState());
         }

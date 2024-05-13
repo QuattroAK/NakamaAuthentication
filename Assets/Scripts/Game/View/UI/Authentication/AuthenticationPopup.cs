@@ -46,11 +46,11 @@ namespace Game.View.UI.Authentication
         {
             authenticationModel.OnChangeState.AddListener(ApplyState);
             authenticationModel.AuthenticationMessageError.AddListener(ShowErrorMessage);
+            authenticationModel.Start();
             backButton.onClick.AddListener(OnClickBack);
             enterButton.onClick.AddListener(SetAuthenticate);
             inputEmail.onValueChanged.AddListener(SetInputData);
             inputPassword.onValueChanged.AddListener(SetInputData);
-            OnClickBack();
 
             var cardsInfo = authenticationModel.GetAuthenticationsCardsInfo();
 
@@ -94,7 +94,7 @@ namespace Game.View.UI.Authentication
         private void OnClickBack()
         {
             inputEmail.text = inputPassword.text = serviceID = string.Empty;
-            authenticationModel.OnBack();
+            authenticationModel.Return();
         }
 
         private void ShowErrorMessage(string message) =>

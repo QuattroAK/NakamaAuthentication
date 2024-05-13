@@ -51,6 +51,12 @@ namespace Game.Model.Services.Authentication
                 result = new AuthenticationResult(ex);
                 Debug.LogError($"Error refresh authenticating: {ex}");
             }
+            catch (Exception ex)
+            {
+                result = new AuthenticationResult(ex);
+                session = null;
+                Debug.LogError($"Error: {ex.Message}");
+            }
             finally
             {
                 AuthorizationProgress = false;
