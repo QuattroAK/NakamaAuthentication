@@ -15,7 +15,7 @@ namespace Game.Infrastructure.Scopes
             builder.Register<PopupsController>(Lifetime.Singleton);
             builder.Register<AuthenticationServices>(Lifetime.Singleton);
             builder.Register<ClientFactory>(Lifetime.Singleton);
-            builder.Register<SessionTokensProvider>(Lifetime.Singleton);
+            builder.Register<SessionDataProvider>(Lifetime.Singleton);
             builder.Register<DeviceAuthentication>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
             builder.Register<EmailAuthentication>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();
             builder.Register<GoogleAuthentication>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces();

@@ -15,7 +15,7 @@ namespace Game.ViewModel.UI.Authentication
     {
         private readonly AuthenticationServices authenticationServices;
         private readonly AuthenticationsInfo authenticationsInfo;
-        private readonly SessionTokensProvider sessionTokensProvider;
+        private readonly SessionDataProvider sessionDataProvider;
         private readonly CancellationTokenSource cancellationToken = new();
         private readonly IClient client;
 
@@ -29,11 +29,11 @@ namespace Game.ViewModel.UI.Authentication
         public UnityEvent<string> AuthenticationMessageError { get; } = new();
 
         public AuthenticationPopupModel(AuthenticationServices authenticationServices,
-            AuthenticationsInfo authenticationsInfo, IClient client, SessionTokensProvider sessionTokensProvider)
+            AuthenticationsInfo authenticationsInfo, IClient client, SessionDataProvider sessionDataProvider)
         {
             this.authenticationServices = authenticationServices;
             this.authenticationsInfo = authenticationsInfo;
-            this.sessionTokensProvider = sessionTokensProvider;
+            this.sessionDataProvider = sessionDataProvider;
             this.client = client;
         }
 
@@ -109,7 +109,7 @@ namespace Game.ViewModel.UI.Authentication
             !string.IsNullOrEmpty(inputData.email) && !string.IsNullOrEmpty(inputData.password);
 
         private bool HasSessionData(out SessionData sessionData) =>
-            sessionTokensProvider.TryGetTokens(out sessionData);
+            sessionDataProvider.TryGetData(out sessionData);
 
         private bool IsEmailService() =>
             currentServiceId == AuthenticationService.Email;
@@ -150,7 +150,7 @@ namespace Game.ViewModel.UI.Authentication
 
             if (result.IsSuccess)
             {
-                sessionTokensProvider.SaveTokens(new SessionData
+                sessionDataProvider.SetData(new SessionData
                 {
                     AuthToken = result.Session.AuthToken,
                     RefreshToken = result.Session.RefreshToken,

@@ -2,19 +2,19 @@ using Core.Persistence;
 
 namespace Game.Model.Services.Connection
 {
-    public class SessionTokensProvider
+    public class SessionDataProvider
     {
         private readonly IStorageService storageService;
 
-        public SessionTokensProvider(IStorageService storageService)
+        public SessionDataProvider(IStorageService storageService)
         {
             this.storageService = storageService;
         }
 
-        public bool TryGetTokens<T>(out T tokensData) =>
+        public bool TryGetData<T>(out T tokensData) =>
             (tokensData = storageService.Load<T>()) != null;
 
-        public void SaveTokens<T>(T tokensData) =>
+        public void SetData<T>(T tokensData) =>
             storageService.Save(tokensData);
     }
 }
