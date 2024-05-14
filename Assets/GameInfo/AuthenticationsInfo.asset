@@ -17,6 +17,8 @@ MonoBehaviour:
     icon: {fileID: 21300000, guid: df83bd00d6feecc4bbf8f13a1f19a9b7, type: 3}
   - id: 2
     icon: {fileID: 21300000, guid: 86cb3036ce75526479fda3c9b4f229b4, type: 3}
+  - id: 3
+    icon: {fileID: 21300000, guid: 7c21ef06db11fb54e8d6341ed0f02369, type: 3}
   mockAuthenticationCardInfo:
     id: 0
     icon: {fileID: 21300000, guid: 550aa5fde0ef6e54c806d05088bd90fc, type: 3}
