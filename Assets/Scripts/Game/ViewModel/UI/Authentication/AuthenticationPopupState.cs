@@ -5,6 +5,10 @@ namespace Game.ViewModel.UI.Authentication
 {
     public class AuthenticationPopupState
     {
+        public AuthenticationPopupState()
+        {
+        }
+        
         public AuthenticationPopupState(AuthenticationStateBase state)
         {
             InputEmail = state.InputEmail;

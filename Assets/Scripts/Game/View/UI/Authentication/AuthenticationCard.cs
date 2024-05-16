@@ -18,11 +18,7 @@ namespace Game.View.UI.Authentication
         public void Start()
         {
             icon.sprite = info.Value;
-            button.onClick.AddListener(() =>
-            {
-                Debug.Log($"On Click  - {info.Key}", this);
-                OnPressed?.Invoke(info.Key);
-            });
+            button.onClick.AddListener(() => OnPressed?.Invoke(info.Key));
         }
     }
 }

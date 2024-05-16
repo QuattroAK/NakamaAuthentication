@@ -3,23 +3,25 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
-using Game.Model.Services.Connection;
 using Nakama;
 using UnityEngine;
 using UnityEngine.Events;
+using R3;
 
 namespace Game.Model.Services.Authentication
 {
     public class AuthenticationServices
     {
-        public IReadOnlyList<IAuthenticationService> Services { get; }
-        public readonly UnityEvent<IAuthenticationResult> OnAuthentication = new();
-        public bool AuthorizationProgress { get; private set; } = false;
-        public bool IsSent { get; private set; } = false;
-
+        private readonly RetryConfiguration retryConfiguration;
+        private readonly ReactiveProperty<bool> authorizationProgress = new();
+        
         private IAuthenticationResult result;
         private ISession session;
-        private readonly RetryConfiguration retryConfiguration;
+        
+        public bool IsSent { get; private set; }
+        public IReadOnlyList<IAuthenticationService> Services { get; }
+        public ReadOnlyReactiveProperty<bool> AuthorizationProgress => authorizationProgress;
+        public readonly UnityEvent<IAuthenticationResult> OnAuthentication = new();
 
         public AuthenticationServices(IReadOnlyList<IAuthenticationService> services)
         {
@@ -33,7 +35,8 @@ namespace Game.Model.Services.Authentication
         public async UniTask AuthenticateRestoreAsync(IClient client, string authToken, string refreshToken,
             CancellationToken ct)
         {
-            AuthorizationProgress = true;
+            IsSent = true;
+            authorizationProgress.Value = true;
             session = Session.Restore(authToken, refreshToken);
 
             try
@@ -59,14 +62,15 @@ namespace Game.Model.Services.Authentication
             }
             finally
             {
-                AuthorizationProgress = false;
                 OnAuthentication?.Invoke(result);
-                IsSent = false;
 
                 if (session != null)
                     Debug.Log($"<color=green>Authenticated with COMPLETED - {session.UserId}</color>");
                 else
                     Debug.LogError($"Failed");
+
+                authorizationProgress.Value = false;
+                IsSent = false;
             }
         }
 
@@ -79,8 +83,8 @@ namespace Game.Model.Services.Authentication
             var service = Services.First(service => service.ID == id);
             Debug.Log($"Start - {id}, timeout - {client.Timeout}");
 
-            AuthorizationProgress = true;
             IsSent = true;
+            authorizationProgress.Value = true;
 
             try
             {
@@ -100,14 +104,15 @@ namespace Game.Model.Services.Authentication
             }
             finally
             {
-                AuthorizationProgress = false;
                 OnAuthentication?.Invoke(result);
-                IsSent = false;
 
                 if (session != null)
                     Debug.Log($"<color=green>Authenticated with COMPLETED - {session.UserId}</color>");
                 else
                     Debug.LogError($"Failed");
+
+                authorizationProgress.Value = false;
+                IsSent = false;
             }
         }
     }

@@ -4,6 +4,6 @@ namespace Game.Model.Services.Connection
     {
         public string AuthToken { get; set; }
         public string RefreshToken { get; set; }
-        public string AuthenticationId { get; set; }
+        public string ServiceId { get; set; }
     }
 }

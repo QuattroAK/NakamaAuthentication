@@ -1,13 +1,13 @@
 using System.Collections.Generic;
 using System.Threading;
-using Cysharp.Threading.Tasks;
 using Core.Extensions;
+using Cysharp.Threading.Tasks;
 using Game.Model.Info.Authentication;
 using Game.Model.Services.Authentication;
 using Game.Model.Services.Connection;
 using Nakama;
+using R3;
 using UnityEngine;
-using UnityEngine.Events;
 
 namespace Game.ViewModel.UI.Authentication
 {
@@ -16,17 +16,21 @@ namespace Game.ViewModel.UI.Authentication
         private readonly AuthenticationServices authenticationServices;
         private readonly AuthenticationsInfo authenticationsInfo;
         private readonly SessionDataProvider sessionDataProvider;
-        private readonly CancellationTokenSource cancellationToken = new();
         private readonly IClient client;
+        private readonly CancellationTokenSource cancellationToken = new();
+        private readonly ReactiveProperty<AuthenticationPopupState> state = new(new AuthenticationPopupState());
+        private readonly ReactiveProperty<AuthenticationService> serviceId = new(AuthenticationService.None);
+        private readonly ReactiveProperty<(string email, string password)> inputData = new();
+        private readonly ReactiveProperty<string> authenticationMessageError = new(string.Empty);
+        private readonly CompositeDisposable disposables = new();
 
-        private AuthenticationService currentServiceId;
-        private (string email, string password) inputData;
         private IAuthenticationResult authenticationResult;
         private Dictionary<string, Sprite> authenticationsCardsInfo;
         private bool connectionSuccess;
 
-        public UnityEvent<AuthenticationPopupState> OnChangeState { get; } = new();
-        public UnityEvent<string> AuthenticationMessageError { get; } = new();
+        public string ServiceId => serviceId.Value.ToString();
+        public ReadOnlyReactiveProperty<AuthenticationPopupState> State => state;
+        public ReadOnlyReactiveProperty<string> AuthenticationMessageError => authenticationMessageError;
 
         public AuthenticationPopupModel(AuthenticationServices authenticationServices,
             AuthenticationsInfo authenticationsInfo, IClient client, SessionDataProvider sessionDataProvider)
@@ -40,28 +44,36 @@ namespace Game.ViewModel.UI.Authentication
         public void Start()
         {
             Subscribe();
-            SetDefaultState();
-
-            if (HasSessionData(out var sessionData))
+            
+            if (TryGetSessionData(out var sessionData))
                 AuthenticateRestore(sessionData);
         }
 
         private void Subscribe()
         {
             authenticationServices.OnAuthentication.AddListener(OnAuthenticationHandler);
-        }
+            serviceId.Subscribe(ResolveState).AddTo(disposables);
+            inputData
+                .Subscribe(_ => ResolveState(serviceId.CurrentValue))
+                .AddTo(disposables);
 
-        private void SetDefaultState() =>
-            Return();
+            authenticationServices.AuthorizationProgress
+                .Subscribe(_ => ResolveState(serviceId.CurrentValue))
+                .AddTo(disposables);
+
+            authenticationMessageError
+                .Subscribe(_ => ResolveState(serviceId.CurrentValue))
+                .AddTo(disposables);
+        }
 
         private void AuthenticateRestore(SessionData sessionData)
         {
-            if (!sessionData.AuthenticationId.TryEnum(out currentServiceId)) return;
+            if (!sessionData.ServiceId.TryEnum(out AuthenticationService currentServiceId)) return;
 
             authenticationServices.AuthenticateRestoreAsync(client, sessionData.AuthToken, sessionData.RefreshToken,
                 cancellationToken.Token).Forget();
-            
-            ChangeState(ResolveState());
+
+            serviceId.Value = currentServiceId;
         }
 
         public IReadOnlyDictionary<string, Sprite> GetAuthenticationsCardsInfo()
@@ -71,9 +83,9 @@ namespace Game.ViewModel.UI.Authentication
             foreach (var service in authenticationServices.Services)
             {
                 authenticationsCardsInfo[service.ID.ToString()] =
-                    authenticationsInfo.TryGet(service.ID, out var serviceInfo)
-                        ? serviceInfo.Icon
-                        : authenticationsInfo.MockAuthenticationCardInfo.Icon;
+                    authenticationsInfo.TryGet(service.ID, out var serviceInfo) ?
+                        serviceInfo.Icon :
+                        authenticationsInfo.MockAuthenticationCardInfo.Icon;
             }
 
             return authenticationsCardsInfo;
@@ -83,90 +95,78 @@ namespace Game.ViewModel.UI.Authentication
         {
             if (!serviceId.TryEnum(out AuthenticationService id)) return;
 
-            this.inputData = inputData;
-            currentServiceId = id;
+            this.serviceId.Value = id;
 
-            if (!IsEmailService())
-            {
-                authenticationServices.AuthenticateAsync(id, client, cancellationToken.Token).Forget();
-            }
-            else
+            if (IsEmailService())
             {
                 if (HasInputData())
                     authenticationServices.AuthenticateAsync(id, client, cancellationToken.Token, inputData).Forget();
+
+                return;
             }
 
-            ChangeState(ResolveState());
+            authenticationServices.AuthenticateAsync(id, client, cancellationToken.Token).Forget();
         }
 
-        public void SetInputData((string email, string password) inputData)
-        {
-            this.inputData = inputData;
-            ChangeState(ResolveState());
-        }
+        public void SetInputData((string email, string password) inputData) =>
+            this.inputData.Value = inputData;
 
         private bool HasInputData() =>
-            !string.IsNullOrEmpty(inputData.email) && !string.IsNullOrEmpty(inputData.password);
+            !string.IsNullOrEmpty(inputData.Value.email) && !string.IsNullOrEmpty(inputData.Value.password);
 
-        private bool HasSessionData(out SessionData sessionData) =>
+        private bool TryGetSessionData(out SessionData sessionData) =>
             sessionDataProvider.TryGetData(out sessionData);
 
         private bool IsEmailService() =>
-            currentServiceId == AuthenticationService.Email;
+            serviceId.Value == AuthenticationService.Email;
 
-        private AuthenticationStateBase ResolveState() => currentServiceId switch
+        private void ResolveState(AuthenticationService serviceId)
         {
-            AuthenticationService.Email => connectionSuccess ? authenticationsInfo.ConnectionSuccess :
-                authenticationServices.AuthorizationProgress ? authenticationsInfo.ConnectionWaitingState :
-                authenticationServices.IsSent ? authenticationResult.Exception is ApiResponseException
-                    ? authenticationsInfo.AuthenticationError
-                    : authenticationsInfo.ConnectionError :
-                HasInputData() ? authenticationsInfo.EmailCanOpenState : authenticationsInfo.EmailState,
+            var newState =  serviceId switch
+            {
+                AuthenticationService.Email => connectionSuccess ? authenticationsInfo.ConnectionSuccess :
+                    authenticationServices.AuthorizationProgress.CurrentValue ? authenticationsInfo.ConnectionWaitingState :
+                    authenticationServices.IsSent ? authenticationResult.Exception is ApiResponseException ?
+                        authenticationsInfo.AuthenticationError : authenticationsInfo.ConnectionError :
+                    HasInputData() ? authenticationsInfo.EmailCanOpenState : authenticationsInfo.EmailState,
 
-            AuthenticationService.Device => connectionSuccess ? authenticationsInfo.ConnectionSuccess :
-                authenticationServices.AuthorizationProgress ? authenticationsInfo.ConnectionWaitingState :
-                authenticationsInfo.ConnectionError,
+                AuthenticationService.Device or AuthenticationService.Google => connectionSuccess ?
+                    authenticationsInfo.ConnectionSuccess : authenticationServices.AuthorizationProgress.CurrentValue ? 
+                        authenticationsInfo.ConnectionWaitingState: authenticationsInfo.ConnectionError,
 
-            AuthenticationService.Google => connectionSuccess ? authenticationsInfo.ConnectionSuccess :
-                authenticationServices.AuthorizationProgress ? authenticationsInfo.ConnectionWaitingState :
-                authenticationsInfo.ConnectionError,
-
-            _ => authenticationsInfo.LogInState
-        };
-
-        private void ChangeState(AuthenticationStateBase state) =>
-            OnChangeState?.Invoke(new AuthenticationPopupState(state));
-
-        public void Return()
-        {
-            currentServiceId = AuthenticationService.None;
-            ChangeState(ResolveState());
+                _ => authenticationsInfo.LogInState
+            };
+            
+            ChangeState(newState);
         }
+
+        private void ChangeState(AuthenticationStateBase newState) =>
+            state.Value = new AuthenticationPopupState(newState);
+
+        public void Return() =>
+            serviceId.Value = AuthenticationService.None;
 
         private void OnAuthenticationHandler(IAuthenticationResult result)
         {
-            connectionSuccess = result.IsSuccess;
-            authenticationResult = result;
-
             if (result.IsSuccess)
             {
                 sessionDataProvider.SetData(new SessionData
                 {
                     AuthToken = result.Session.AuthToken,
                     RefreshToken = result.Session.RefreshToken,
-                    AuthenticationId = currentServiceId.ToString()
+                    ServiceId = serviceId.CurrentValue.ToString()
                 });
             }
 
-            if (!authenticationResult.IsSuccess && authenticationResult.Exception is ApiResponseException)
-                AuthenticationMessageError?.Invoke(authenticationResult.ErrorMessage);
-
-            ChangeState(ResolveState());
+            connectionSuccess = result.IsSuccess;
+            authenticationResult = result;
+            authenticationMessageError.Value = result.ErrorMessage;
         }
-
+    
         public void Dispose()
         {
             authenticationServices.OnAuthentication.RemoveListener(OnAuthenticationHandler);
+            disposables.Dispose();
             cancellationToken?.Cancel();
             cancellationToken?.Dispose();
         }
