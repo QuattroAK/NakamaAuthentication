@@ -9,7 +9,7 @@ namespace Game.Model.Services.Authentication
         {
             Exception = ex;
         }
-        
+
         public AuthenticationResult(ISession session)
         {
             Session = session;
@@ -17,7 +17,7 @@ namespace Game.Model.Services.Authentication
 
         public ISession Session { get; }
         public Exception Exception { get; }
-        public string ErrorMessage => Exception.Message;
+        public string ErrorMessage => Exception?.Message ?? string.Empty;
         public bool IsSuccess => Session != null;
     }
 }

@@ -18,9 +18,9 @@ namespace Game.Model.Services.Authentication
         private IAuthenticationResult result;
         private ISession session;
         
+        public bool IsSent { get; private set; }
         public IReadOnlyList<IAuthenticationService> Services { get; }
         public ReadOnlyReactiveProperty<bool> AuthorizationProgress => authorizationProgress;
-        public bool IsSent { get; private set; }
         public readonly UnityEvent<IAuthenticationResult> OnAuthentication = new();
 
         public AuthenticationServices(IReadOnlyList<IAuthenticationService> services)

@@ -44,7 +44,7 @@ namespace Game.View.UI.Authentication
         private void Start()
         {
             authenticationModel.State.Subscribe(ApplyState).AddTo(gameObject);
-            authenticationModel.AuthenticationMessageError.AddListener(ShowErrorMessage);
+            authenticationModel.AuthenticationMessageError.Subscribe(ShowErrorMessage).AddTo(gameObject);
             authenticationModel.Start();
             backButton.onClick.AddListener(OnClickBack);
             enterButton.onClick.AddListener(() => SetAuthenticate(authenticationModel.AuthenticationId));
