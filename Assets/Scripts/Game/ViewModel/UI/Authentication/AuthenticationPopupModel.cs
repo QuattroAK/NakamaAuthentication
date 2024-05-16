@@ -6,6 +6,7 @@ using Game.Model.Info.Authentication;
 using Game.Model.Services.Authentication;
 using Game.Model.Services.Connection;
 using Nakama;
+using R3;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -25,8 +26,10 @@ namespace Game.ViewModel.UI.Authentication
         private Dictionary<string, Sprite> authenticationsCardsInfo;
         private bool connectionSuccess;
 
-        public UnityEvent<AuthenticationPopupState> OnChangeState { get; } = new();
         public UnityEvent<string> AuthenticationMessageError { get; } = new();
+
+        private readonly ReactiveProperty<AuthenticationPopupState> state = new(new AuthenticationPopupState());
+        public ReadOnlyReactiveProperty<AuthenticationPopupState> State => state;
 
         public AuthenticationPopupModel(AuthenticationServices authenticationServices,
             AuthenticationsInfo authenticationsInfo, IClient client, SessionDataProvider sessionDataProvider)
@@ -134,8 +137,8 @@ namespace Game.ViewModel.UI.Authentication
             _ => authenticationsInfo.LogInState
         };
 
-        private void ChangeState(AuthenticationStateBase state) =>
-            OnChangeState?.Invoke(new AuthenticationPopupState(state));
+        private void ChangeState(AuthenticationStateBase newState) =>
+            state.Value = new AuthenticationPopupState(newState);
 
         public void Return()
         {
