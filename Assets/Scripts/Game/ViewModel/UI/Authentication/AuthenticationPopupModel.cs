@@ -16,19 +16,19 @@ namespace Game.ViewModel.UI.Authentication
         private readonly AuthenticationServices authenticationServices;
         private readonly AuthenticationsInfo authenticationsInfo;
         private readonly SessionDataProvider sessionDataProvider;
-        private readonly CancellationTokenSource cancellationToken = new();
         private readonly IClient client;
+        private readonly CancellationTokenSource cancellationToken = new();
         private readonly ReactiveProperty<AuthenticationPopupState> state = new(new AuthenticationPopupState());
-        private readonly ReactiveProperty<AuthenticationService> authenticationId = new(AuthenticationService.None);
+        private readonly ReactiveProperty<AuthenticationService> serviceId = new(AuthenticationService.None);
         private readonly ReactiveProperty<(string email, string password)> inputData = new();
         private readonly ReactiveProperty<string> authenticationMessageError = new(string.Empty);
-        private readonly CompositeDisposable disposables = new ();
+        private readonly CompositeDisposable disposables = new();
 
         private IAuthenticationResult authenticationResult;
         private Dictionary<string, Sprite> authenticationsCardsInfo;
         private bool connectionSuccess;
-        
-        public string AuthenticationId => authenticationId.Value.ToString();
+
+        public string ServiceId => serviceId.Value.ToString();
         public ReadOnlyReactiveProperty<AuthenticationPopupState> State => state;
         public ReadOnlyReactiveProperty<string> AuthenticationMessageError => authenticationMessageError;
 
@@ -45,35 +45,35 @@ namespace Game.ViewModel.UI.Authentication
         {
             Subscribe();
             
-            if (HasSessionData(out var sessionData))
+            if (TryGetSessionData(out var sessionData))
                 AuthenticateRestore(sessionData);
         }
 
         private void Subscribe()
         {
             authenticationServices.OnAuthentication.AddListener(OnAuthenticationHandler);
-            authenticationId.Subscribe(ResolveState).AddTo(disposables);
+            serviceId.Subscribe(ResolveState).AddTo(disposables);
             inputData
-                .Subscribe(_ => ResolveState(authenticationId.CurrentValue))
+                .Subscribe(_ => ResolveState(serviceId.CurrentValue))
                 .AddTo(disposables);
 
             authenticationServices.AuthorizationProgress
-                .Subscribe(_ => ResolveState(authenticationId.CurrentValue))
+                .Subscribe(_ => ResolveState(serviceId.CurrentValue))
                 .AddTo(disposables);
 
             authenticationMessageError
-                .Subscribe(_ => ResolveState(authenticationId.CurrentValue))
+                .Subscribe(_ => ResolveState(serviceId.CurrentValue))
                 .AddTo(disposables);
         }
 
         private void AuthenticateRestore(SessionData sessionData)
         {
-            if (!sessionData.AuthenticationId.TryEnum(out AuthenticationService currentServiceId)) return;
+            if (!sessionData.ServiceId.TryEnum(out AuthenticationService currentServiceId)) return;
 
             authenticationServices.AuthenticateRestoreAsync(client, sessionData.AuthToken, sessionData.RefreshToken,
                 cancellationToken.Token).Forget();
 
-            authenticationId.Value = currentServiceId;
+            serviceId.Value = currentServiceId;
         }
 
         public IReadOnlyDictionary<string, Sprite> GetAuthenticationsCardsInfo()
@@ -95,7 +95,7 @@ namespace Game.ViewModel.UI.Authentication
         {
             if (!serviceId.TryEnum(out AuthenticationService id)) return;
 
-            authenticationId.Value = id;
+            this.serviceId.Value = id;
 
             if (IsEmailService())
             {
@@ -108,19 +108,17 @@ namespace Game.ViewModel.UI.Authentication
             authenticationServices.AuthenticateAsync(id, client, cancellationToken.Token).Forget();
         }
 
-        public void SetInputData((string email, string password) inputData)
-        {
+        public void SetInputData((string email, string password) inputData) =>
             this.inputData.Value = inputData;
-        }
 
         private bool HasInputData() =>
             !string.IsNullOrEmpty(inputData.Value.email) && !string.IsNullOrEmpty(inputData.Value.password);
 
-        private bool HasSessionData(out SessionData sessionData) =>
+        private bool TryGetSessionData(out SessionData sessionData) =>
             sessionDataProvider.TryGetData(out sessionData);
 
         private bool IsEmailService() =>
-            authenticationId.Value == AuthenticationService.Email;
+            serviceId.Value == AuthenticationService.Email;
 
         private void ResolveState(AuthenticationService serviceId)
         {
@@ -146,7 +144,7 @@ namespace Game.ViewModel.UI.Authentication
             state.Value = new AuthenticationPopupState(newState);
 
         public void Return() =>
-            authenticationId.Value = AuthenticationService.None;
+            serviceId.Value = AuthenticationService.None;
 
         private void OnAuthenticationHandler(IAuthenticationResult result)
         {
@@ -156,7 +154,7 @@ namespace Game.ViewModel.UI.Authentication
                 {
                     AuthToken = result.Session.AuthToken,
                     RefreshToken = result.Session.RefreshToken,
-                    AuthenticationId = authenticationId.CurrentValue.ToString()
+                    ServiceId = serviceId.CurrentValue.ToString()
                 });
             }
 

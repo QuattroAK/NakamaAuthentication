@@ -46,8 +46,8 @@ namespace Game.View.UI.Authentication
             authenticationModel.State.Subscribe(ApplyState).AddTo(gameObject);
             authenticationModel.AuthenticationMessageError.Subscribe(ShowErrorMessage).AddTo(gameObject);
             authenticationModel.Start();
-            backButton.onClick.AddListener(OnClickBack);
-            enterButton.onClick.AddListener(() => SetAuthenticate(authenticationModel.AuthenticationId));
+            backButton.onClick.AddListener(Return);
+            enterButton.onClick.AddListener(() => SetAuthenticate(authenticationModel.ServiceId));
             inputEmail.onValueChanged.AddListener(SetInputData);
             inputPassword.onValueChanged.AddListener(SetInputData);
 
@@ -83,7 +83,7 @@ namespace Game.View.UI.Authentication
         private void OnPressCardHandler(string serviceId) =>
             SetAuthenticate(serviceId);
 
-        private void OnClickBack()
+        private void Return()
         {
             inputEmail.text = inputPassword.text = string.Empty;
             authenticationModel.Return();
