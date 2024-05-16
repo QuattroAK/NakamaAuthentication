@@ -41,15 +41,13 @@ namespace Game.View.UI.Authentication
 
         private readonly List<IScopedObjectResolver> scopes = new();
 
-        private string serviceID;
-
         private void Start()
         {
             authenticationModel.State.Subscribe(ApplyState).AddTo(gameObject);
             authenticationModel.AuthenticationMessageError.AddListener(ShowErrorMessage);
             authenticationModel.Start();
             backButton.onClick.AddListener(OnClickBack);
-            enterButton.onClick.AddListener(SetAuthenticate);
+            enterButton.onClick.AddListener(() => SetAuthenticate(authenticationModel.AuthenticationId));
             inputEmail.onValueChanged.AddListener(SetInputData);
             inputPassword.onValueChanged.AddListener(SetInputData);
 
@@ -64,37 +62,30 @@ namespace Game.View.UI.Authentication
 
                 scope.InjectGameObject(card.gameObject);
                 scopes.Add(scope);
-                card.OnPressed.AddListener(SetAuthenticateId);
+                card.OnPressed.AddListener(OnPressCardHandler);
             }
         }
 
-        private void SetInputData(string _)
-        {
+        private void SetInputData(string _) =>
             authenticationModel.SetInputData((inputEmail.text, inputPassword.text));
-        }
 
         private void OnDestroy()
         {
             foreach (var scope in scopes)
                 scope.Dispose();
-            
+
             authenticationModel.Dispose();
         }
 
-        private void SetAuthenticate()
-        {
-            authenticationModel.SetAuthenticate(serviceID, (inputEmail.text, inputPassword.text));
-        }
+        private void SetAuthenticate(string serviceId) =>
+            authenticationModel.SetAuthenticate(serviceId, (inputEmail.text, inputPassword.text));
 
-        private void SetAuthenticateId(string serviceID)
-        {
-            this.serviceID = serviceID;
-            SetAuthenticate();
-        }
+        private void OnPressCardHandler(string serviceId) =>
+            SetAuthenticate(serviceId);
 
         private void OnClickBack()
         {
-            inputEmail.text = inputPassword.text = serviceID = string.Empty;
+            inputEmail.text = inputPassword.text = string.Empty;
             authenticationModel.Return();
         }
 
