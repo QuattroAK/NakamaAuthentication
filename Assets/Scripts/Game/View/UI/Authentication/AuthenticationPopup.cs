@@ -1,9 +1,10 @@
+using System.Collections.Generic;
 using Game.ViewModel.UI.Authentication;
 using R3;
+using VContainer.Unity;
 using UnityEngine;
 using UnityEngine.UI;
 using VContainer;
-using VContainer.Unity;
 using Text = TMPro.TextMeshProUGUI;
 using InputField = TMPro.TMP_InputField;
 
@@ -38,17 +39,19 @@ namespace Game.View.UI.Authentication
         [Inject] private readonly IAuthenticationPopupModel authenticationModel;
         [Inject] private readonly IObjectResolver container;
 
+        private readonly List<IScopedObjectResolver> scopes = new();
+
         private string serviceID;
 
         private void Start()
         {
             authenticationModel.State.Subscribe(ApplyState).AddTo(gameObject);
             authenticationModel.AuthenticationMessageError.AddListener(ShowErrorMessage);
+            authenticationModel.Start();
             backButton.onClick.AddListener(OnClickBack);
             enterButton.onClick.AddListener(SetAuthenticate);
             inputEmail.onValueChanged.AddListener(SetInputData);
             inputPassword.onValueChanged.AddListener(SetInputData);
-            authenticationModel.Start();
 
             var cardsInfo = authenticationModel.GetAuthenticationsCardsInfo();
 
@@ -56,10 +59,11 @@ namespace Game.View.UI.Authentication
             {
                 var card = Instantiate(cardPrefab, cardsParent);
 
-                using var scope = container
+                var scope = container
                     .CreateScope(builder => { builder.RegisterInstance(cardInfo); });
 
                 scope.InjectGameObject(card.gameObject);
+                scopes.Add(scope);
                 card.OnPressed.AddListener(SetAuthenticateId);
             }
         }
@@ -71,6 +75,9 @@ namespace Game.View.UI.Authentication
 
         private void OnDestroy()
         {
+            foreach (var scope in scopes)
+                scope.Dispose();
+            
             authenticationModel.Dispose();
         }
 
