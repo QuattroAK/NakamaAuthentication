@@ -54,7 +54,3 @@ This project is licensed under the MIT License. For details, see the [LICENSE](L
 ## Contact
 
 If you have any questions or suggestions, please contact us through Issues on GitHub.
-
----
-
-I hope this `README.md` file will be useful and help other developers easily understand and use your project. Good luck!
