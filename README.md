@@ -43,7 +43,7 @@ This project can be used as a template for creating your own authentication syst
 
 ## Usage
 
-1. Open the `MainScene` scene.
+1. Open the `AuthenticationScene` scene.
 2. In the Unity Inspector, configure the authentication settings according to your Nakama server and Google Play Games.
 3. Run the project in the editor or on a device.
 
