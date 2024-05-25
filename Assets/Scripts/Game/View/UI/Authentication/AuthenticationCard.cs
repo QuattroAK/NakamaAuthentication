@@ -1,6 +1,5 @@
-using System.Collections.Generic;
+using Game.ViewModel.UI.Authentication;
 using UnityEngine;
-using UnityEngine.Events;
 using UnityEngine.UI;
 using VContainer;
 
@@ -11,14 +10,12 @@ namespace Game.View.UI.Authentication
         [SerializeField] private Image icon;
         [SerializeField] private Button button;
 
-        [Inject] private readonly KeyValuePair<string, Sprite> info;
-
-        public readonly UnityEvent<string> OnPressed = new();
+        [Inject] private readonly IAuthenticationCardModel model;
 
         public void Start()
         {
-            icon.sprite = info.Value;
-            button.onClick.AddListener(() => OnPressed?.Invoke(info.Key));
+            icon.sprite = model.Sprite;
+            button.onClick.AddListener(model.OnPressed);
         }
     }
 }
