@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using Core.Extensions;
 using Cysharp.Threading.Tasks;
@@ -8,6 +9,7 @@ using Game.Model.Services.Connection;
 using Nakama;
 using R3;
 using UnityEngine;
+using VContainer;
 
 namespace Game.ViewModel.UI.Authentication
 {
@@ -28,16 +30,19 @@ namespace Game.ViewModel.UI.Authentication
         private Dictionary<string, Sprite> authenticationsCardsInfo;
         private bool connectionSuccess;
 
+        public IObjectResolver Container { get; }
         public string ServiceId => serviceId.Value.ToString();
         public ReadOnlyReactiveProperty<AuthenticationPopupState> State => state;
         public ReadOnlyReactiveProperty<string> AuthenticationMessageError => authenticationMessageError;
 
         public AuthenticationPopupModel(AuthenticationServices authenticationServices,
-            AuthenticationsInfo authenticationsInfo, IClient client, SessionDataProvider sessionDataProvider)
+            AuthenticationsInfo authenticationsInfo, IClient client, SessionDataProvider sessionDataProvider,
+            IObjectResolver container)
         {
             this.authenticationServices = authenticationServices;
             this.authenticationsInfo = authenticationsInfo;
             this.sessionDataProvider = sessionDataProvider;
+            Container = container;
             this.client = client;
         }
 
@@ -75,20 +80,18 @@ namespace Game.ViewModel.UI.Authentication
 
             serviceId.Value = currentServiceId;
         }
-
-        public IReadOnlyDictionary<string, Sprite> GetAuthenticationsCardsInfo()
+        
+        public IEnumerable<IAuthenticationCardModel> GetAuthenticationsCards()
         {
-            authenticationsCardsInfo = new Dictionary<string, Sprite>(authenticationServices.Services.Count);
-
-            foreach (var service in authenticationServices.Services)
+            return authenticationServices.Services.Select(service => Container.CreateScope(builder =>
             {
-                authenticationsCardsInfo[service.ID.ToString()] =
-                    authenticationsInfo.TryGet(service.ID, out var serviceInfo) ?
-                        serviceInfo.Icon :
-                        authenticationsInfo.MockAuthenticationCardInfo.Icon;
-            }
-
-            return authenticationsCardsInfo;
+                builder.Register<AuthenticationCardModel>(Lifetime.Scoped)
+                    .WithParameter(authenticationsInfo.TryGet(service.ID, out var serviceInfo)
+                        ? serviceInfo.Icon
+                        : authenticationsInfo.MockAuthenticationCardInfo.Icon)
+                    .WithParameter(service.ID.ToString()).AsImplementedInterfaces();
+                    
+            }).Resolve<IAuthenticationCardModel>());
         }
 
         public void SetAuthenticate(string serviceId, (string email, string password) inputData)

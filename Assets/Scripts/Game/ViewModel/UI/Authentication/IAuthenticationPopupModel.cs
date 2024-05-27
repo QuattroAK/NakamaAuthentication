@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using R3;
-using UnityEngine;
+using VContainer;
 
 namespace Game.ViewModel.UI.Authentication
 {
@@ -9,8 +9,9 @@ namespace Game.ViewModel.UI.Authentication
     {
         ReadOnlyReactiveProperty<AuthenticationPopupState> State { get; }
         ReadOnlyReactiveProperty<string> AuthenticationMessageError { get; }
+        public IObjectResolver Container { get; }
         string ServiceId { get; }
-        IReadOnlyDictionary<string, Sprite> GetAuthenticationsCardsInfo();
+        public IEnumerable<IAuthenticationCardModel> GetAuthenticationsCards();
         void SetAuthenticate(string serviceId, (string email, string password) inputData);
         void SetInputData((string email, string password) inputData);
         void Return();

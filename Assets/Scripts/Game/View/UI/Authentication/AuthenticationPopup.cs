@@ -1,10 +1,9 @@
-using System.Collections.Generic;
 using Game.ViewModel.UI.Authentication;
 using R3;
-using VContainer.Unity;
 using UnityEngine;
 using UnityEngine.UI;
 using VContainer;
+using VContainer.Unity;
 using Text = TMPro.TextMeshProUGUI;
 using InputField = TMPro.TMP_InputField;
 
@@ -37,9 +36,6 @@ namespace Game.View.UI.Authentication
         [SerializeField] private GameObject connectionWaiting;
 
         [Inject] private readonly IAuthenticationPopupModel authenticationModel;
-        [Inject] private readonly IObjectResolver container;
-
-        private readonly List<IScopedObjectResolver> scopes = new();
 
         private void Start()
         {
@@ -51,18 +47,13 @@ namespace Game.View.UI.Authentication
             inputEmail.onValueChanged.AddListener(SetInputData);
             inputPassword.onValueChanged.AddListener(SetInputData);
 
-            var cardsInfo = authenticationModel.GetAuthenticationsCardsInfo();
-
-            foreach (var cardInfo in cardsInfo)
+            foreach (var cardModel in authenticationModel.GetAuthenticationsCards())
             {
-                var card = Instantiate(cardPrefab, cardsParent);
+                authenticationModel.Container
+                    .CreateScope(builder => { builder.RegisterInstance(cardModel); })
+                    .Instantiate(cardPrefab, cardsParent);
 
-                var scope = container
-                    .CreateScope(builder => { builder.RegisterInstance(cardInfo); });
-
-                scope.InjectGameObject(card.gameObject);
-                scopes.Add(scope);
-                card.OnPressed.AddListener(OnPressCardHandler);
+                cardModel.OnPressedEvent.AddListener(OnPressCardHandler);
             }
         }
 
@@ -71,9 +62,6 @@ namespace Game.View.UI.Authentication
 
         private void OnDestroy()
         {
-            foreach (var scope in scopes)
-                scope.Dispose();
-
             authenticationModel.Dispose();
         }
 
